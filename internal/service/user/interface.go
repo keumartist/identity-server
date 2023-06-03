@@ -1,9 +1,11 @@
-package repository
+package service
 
-import domain "art-sso/internal/domain/user"
+import (
+	domain "art-sso/internal/domain/user"
+)
 
-type UserRepository interface {
-	CreateUser(user *domain.User) error
+type UserService interface {
+	CreateUser(email, password string) (*domain.User, error)
 	GetUserByID(id string) (*domain.User, error)
 	GetUserByEmail(email string) (*domain.User, error)
 	UpdateUser(user *domain.User) error

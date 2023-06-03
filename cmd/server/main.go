@@ -1,13 +1,9 @@
 package main
 
-import "github.com/gofiber/fiber/v2"
+import "art-sso/internal/bootstrap"
 
 func main() {
-	app := fiber.New()
-
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	app := bootstrap.InitApp()
 
 	app.Listen(":3000")
 }
