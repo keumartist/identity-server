@@ -20,7 +20,7 @@ func TestUser(t *testing.T) {
 	t.Run("Create user", func(t *testing.T) {
 		user := domain.User{
 			Email:         "user@example.com",
-			Salt:          "randomsalt",
+			Password:      "randompassword",
 			EmailVerified: false,
 		}
 
@@ -30,7 +30,6 @@ func TestUser(t *testing.T) {
 		assert.NotNil(t, user.CreatedAt)
 		assert.NotNil(t, user.UpdatedAt)
 		assert.Equal(t, "user@example.com", user.Email)
-		assert.Equal(t, "randomsalt", user.Salt)
 		assert.False(t, user.EmailVerified)
 	})
 
@@ -38,7 +37,6 @@ func TestUser(t *testing.T) {
 		user := domain.User{
 			Email:         "user2@example.com",
 			Password:      "oldpassword",
-			Salt:          "randomsalt",
 			EmailVerified: false,
 		}
 

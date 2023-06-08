@@ -6,26 +6,26 @@ import (
 	util "art-sso/internal/service/util"
 )
 
-type UserService struct {
+type UserServiceImpl struct {
 	repo repository.UserRepository
 }
 
-func NewUserService(repo repository.UserRepository) *UserService {
-	return &UserService{
+func NewUserService(repo repository.UserRepository) *UserServiceImpl {
+	return &UserServiceImpl{
 		repo: repo,
 	}
 }
 
-func (s *UserService) CreateUser(email, password string) (*domain.User, error) {
-	salt := util.GenerateSaltForPassword(password)
+func (s *UserServiceImpl) CreateUser(email, password string) (*domain.User, error) {
+	hashedPassword, err := util.HashPassword(password)
 
 	user := &domain.User{
 		Email:    email,
-		Password: password,
-		Salt:     salt,
+		Password: hashedPassword,
 	}
 
-	err := s.repo.CreateUser(user)
+	err = s.repo.CreateUser(user)
+
 	if err != nil {
 		return nil, err
 	}
@@ -33,18 +33,18 @@ func (s *UserService) CreateUser(email, password string) (*domain.User, error) {
 	return user, nil
 }
 
-func (s *UserService) GetUserByID(id string) (*domain.User, error) {
+func (s *UserServiceImpl) GetUserByID(id string) (*domain.User, error) {
 	return s.repo.GetUserByID(id)
 }
 
-func (s *UserService) GetUserByEmail(email string) (*domain.User, error) {
+func (s *UserServiceImpl) GetUserByEmail(email string) (*domain.User, error) {
 	return s.repo.GetUserByEmail(email)
 }
 
-func (s *UserService) UpdateUser(user *domain.User) error {
+func (s *UserServiceImpl) UpdateUser(user *domain.User) error {
 	return s.repo.UpdateUser(user)
 }
 
-func (s *UserService) DeleteUser(user *domain.User) error {
+func (s *UserServiceImpl) DeleteUser(user *domain.User) error {
 	return s.repo.DeleteUser(user)
 }

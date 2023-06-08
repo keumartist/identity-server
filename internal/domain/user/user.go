@@ -11,7 +11,6 @@ type User struct {
 	ID                uint   `gorm:"primaryKey"`
 	Email             string `gorm:"type:varchar(256);unique"`
 	Password          string
-	Salt              string
 	RefreshToken      string
 	VerificationCode  *string
 	EmailVerified     bool               `gorm:"default:false"`

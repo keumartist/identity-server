@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/gofiber/fiber/v2 v2.44.0
 	github.com/stretchr/testify v1.8.4
+	golang.org/x/crypto v0.7.0
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/gorm v1.25.1
 )
