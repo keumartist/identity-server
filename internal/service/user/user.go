@@ -18,6 +18,9 @@ func NewUserService(repo repository.UserRepository) *UserServiceImpl {
 
 func (s *UserServiceImpl) CreateUser(email, password string) (*domain.User, error) {
 	hashedPassword, err := util.HashPassword(password)
+	if err != nil {
+		return nil, err
+	}
 
 	user := &domain.User{
 		Email:    email,

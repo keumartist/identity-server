@@ -2,6 +2,7 @@ package repository
 
 import (
 	domain "art-sso/internal/domain/user"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -27,18 +28,30 @@ func (r *MySQLUserRepository) CreateUser(user *domain.User) error {
 func (r *MySQLUserRepository) GetUserByID(id string) (*domain.User, error) {
 	var user domain.User
 	result := r.db.First(&user, id)
+
 	if result.Error != nil {
-		return nil, result.Error
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else {
+			return nil, result.Error
+		}
 	}
+
 	return &user, nil
 }
 
 func (r *MySQLUserRepository) GetUserByEmail(email string) (*domain.User, error) {
 	var user domain.User
 	result := r.db.Where("email = ?", email).First(&user)
+
 	if result.Error != nil {
-		return nil, result.Error
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else {
+			return nil, result.Error
+		}
 	}
+
 	return &user, nil
 }
 

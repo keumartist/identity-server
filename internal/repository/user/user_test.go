@@ -12,7 +12,7 @@ import (
 )
 
 func TestMySQLUserRepository(t *testing.T) {
-	// MySQL Repository 테스트이지만, 일단은 SQLite를 사용한다. 현재 메소드는 모두 서로 호환되는 상황.
+	// MySQL Repository 테스트이지만, Unit Test 에서는 일단은 SQLite를 사용한다. 현재 메소드는 모두 서로 호환되는 상황.
 	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
 	if err != nil {
 		t.Fatal(err)
@@ -28,7 +28,6 @@ func TestMySQLUserRepository(t *testing.T) {
 	t.Run("Create user", func(t *testing.T) {
 		user := domain.User{
 			Email:         "user@example.com",
-			Salt:          "randomsalt",
 			EmailVerified: false,
 		}
 
@@ -38,7 +37,7 @@ func TestMySQLUserRepository(t *testing.T) {
 	})
 
 	t.Run("Get user by ID", func(t *testing.T) {
-		user, err := userRepo.GetUserByID(1)
+		user, err := userRepo.GetUserByID("1")
 		t.Log(user)
 
 		assert.NoError(t, err)
@@ -53,7 +52,7 @@ func TestMySQLUserRepository(t *testing.T) {
 	})
 
 	t.Run("Update user", func(t *testing.T) {
-		user, err := userRepo.GetUserByID(1)
+		user, err := userRepo.GetUserByID("1")
 
 		assert.NoError(t, err)
 
@@ -64,7 +63,7 @@ func TestMySQLUserRepository(t *testing.T) {
 	})
 
 	t.Run("Delete user", func(t *testing.T) {
-		user, err := userRepo.GetUserByID(1)
+		user, err := userRepo.GetUserByID("1")
 
 		assert.NoError(t, err)
 
