@@ -1,8 +1,7 @@
-package handler_test
+package handler
 
 import (
 	domain "art-sso/internal/domain/user"
-	handler "art-sso/internal/handler/user"
 	repository "art-sso/internal/repository/user"
 	service "art-sso/internal/service/user"
 	"bytes"
@@ -27,7 +26,7 @@ func TestUserHandler(t *testing.T) {
 
 	userRepository := repository.NewMySQLUserRepository(db)
 	userService := service.NewUserService(userRepository)
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := NewUserHandler(userService)
 
 	app := fiber.New()
 	userHandler.RegisterRoutes(app)

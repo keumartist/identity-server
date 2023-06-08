@@ -1,4 +1,4 @@
-package domain_test
+package domain
 
 import (
 	"testing"
@@ -6,19 +6,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-
-	domain "art-sso/internal/domain/user"
 )
 
 func TestUser(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	assert.NoError(t, err)
 
-	err = db.AutoMigrate(&domain.User{})
+	err = db.AutoMigrate(&User{})
 	assert.NoError(t, err)
 
 	t.Run("Create user", func(t *testing.T) {
-		user := domain.User{
+		user := User{
 			Email:         "user@example.com",
 			Password:      "randompassword",
 			EmailVerified: false,
@@ -34,7 +32,7 @@ func TestUser(t *testing.T) {
 	})
 
 	t.Run("Change password", func(t *testing.T) {
-		user := domain.User{
+		user := User{
 			Email:         "user2@example.com",
 			Password:      "oldpassword",
 			EmailVerified: false,
@@ -50,7 +48,7 @@ func TestUser(t *testing.T) {
 
 	t.Run("Verify email", func(t *testing.T) {
 		code := "verificationcode"
-		user := domain.User{
+		user := User{
 			Email:            "user3@example.com",
 			VerificationCode: &code,
 			EmailVerified:    false,

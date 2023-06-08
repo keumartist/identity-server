@@ -1,4 +1,4 @@
-package repository_test
+package repository
 
 import (
 	"testing"
@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 
 	domain "art-sso/internal/domain/user"
-	repository "art-sso/internal/repository/user"
 )
 
 func TestMySQLUserRepository(t *testing.T) {
@@ -23,7 +22,7 @@ func TestMySQLUserRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	userRepo := repository.NewMySQLUserRepository(db)
+	userRepo := NewMySQLUserRepository(db)
 
 	t.Run("Create user", func(t *testing.T) {
 		user := domain.User{

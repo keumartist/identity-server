@@ -1,11 +1,10 @@
-package service_test
+package service
 
 import (
 	"testing"
 
 	domain "art-sso/internal/domain/user"
 	repository "art-sso/internal/repository/user"
-	service "art-sso/internal/service/user"
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
@@ -21,7 +20,7 @@ func TestUserService(t *testing.T) {
 	db.AutoMigrate(&domain.User{})
 
 	userRepository := repository.NewMySQLUserRepository(db)
-	userService := service.NewUserService(userRepository)
+	userService := NewUserService(userRepository)
 
 	t.Run("Create user", func(t *testing.T) {
 		email := "user@example.com"
