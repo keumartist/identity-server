@@ -1,18 +1,21 @@
-package service
+package user
 
 import (
 	domain "art-sso/internal/domain/user"
 	repository "art-sso/internal/repository/user"
+	tokenservice "art-sso/internal/service/token"
 	util "art-sso/internal/service/util"
 )
 
 type UserServiceImpl struct {
-	repo repository.UserRepository
+	repo     repository.UserRepository
+	tokenSvc tokenservice.TokenService
 }
 
-func NewUserService(repo repository.UserRepository) *UserServiceImpl {
+func NewUserService(repo repository.UserRepository, tokenSvc tokenservice.TokenService) *UserServiceImpl {
 	return &UserServiceImpl{
-		repo: repo,
+		repo:     repo,
+		tokenSvc: tokenSvc,
 	}
 }
 

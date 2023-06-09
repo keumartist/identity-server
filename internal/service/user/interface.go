@@ -1,8 +1,6 @@
-package service
+package user
 
-import (
-	domain "art-sso/internal/domain/user"
-)
+import domain "art-sso/internal/domain/user"
 
 type UserService interface {
 	CreateUser(email, password string) (*domain.User, error)
