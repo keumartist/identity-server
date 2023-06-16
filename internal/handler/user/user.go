@@ -1,19 +1,19 @@
-package handler
+package user
 
 import (
 	"net/http"
 
-	domain "art-sso/internal/domain/user"
-	service "art-sso/internal/service/user"
+	userdomain "art-sso/internal/domain/user"
+	userservice "art-sso/internal/service/user"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type UserHandlerImpl struct {
-	service service.UserService
+	service userservice.UserService
 }
 
-func NewUserHandler(service service.UserService) *UserHandlerImpl {
+func NewUserHandler(service userservice.UserService) *UserHandlerImpl {
 	return &UserHandlerImpl{
 		service: service,
 	}
@@ -79,7 +79,7 @@ func (h *UserHandlerImpl) GetUsers(c *fiber.Ctx) error {
 }
 
 func (h *UserHandlerImpl) UpdateUser(c *fiber.Ctx) error {
-	user := new(domain.User)
+	user := new(userdomain.User)
 	if err := c.BodyParser(user); err != nil {
 		return c.Status(http.StatusBadRequest).SendString(err.Error())
 	}

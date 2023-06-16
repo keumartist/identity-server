@@ -1,7 +1,7 @@
-package repository
+package user
 
 import (
-	domain "art-sso/internal/domain/user"
+	userdomain "art-sso/internal/domain/user"
 	"errors"
 
 	"gorm.io/gorm"
@@ -17,7 +17,7 @@ func NewMySQLUserRepository(db *gorm.DB) UserRepository {
 	}
 }
 
-func (r *MySQLUserRepository) CreateUser(user *domain.User) error {
+func (r *MySQLUserRepository) CreateUser(user *userdomain.User) error {
 	result := r.db.Create(user)
 	if result.Error != nil {
 		return result.Error
@@ -25,8 +25,8 @@ func (r *MySQLUserRepository) CreateUser(user *domain.User) error {
 	return nil
 }
 
-func (r *MySQLUserRepository) GetUserByID(id string) (*domain.User, error) {
-	var user domain.User
+func (r *MySQLUserRepository) GetUserByID(id string) (*userdomain.User, error) {
+	var user userdomain.User
 	result := r.db.First(&user, id)
 
 	if result.Error != nil {
@@ -40,8 +40,8 @@ func (r *MySQLUserRepository) GetUserByID(id string) (*domain.User, error) {
 	return &user, nil
 }
 
-func (r *MySQLUserRepository) GetUserByEmail(email string) (*domain.User, error) {
-	var user domain.User
+func (r *MySQLUserRepository) GetUserByEmail(email string) (*userdomain.User, error) {
+	var user userdomain.User
 	result := r.db.Where("email = ?", email).First(&user)
 
 	if result.Error != nil {
@@ -55,7 +55,7 @@ func (r *MySQLUserRepository) GetUserByEmail(email string) (*domain.User, error)
 	return &user, nil
 }
 
-func (r *MySQLUserRepository) UpdateUser(user *domain.User) error {
+func (r *MySQLUserRepository) UpdateUser(user *userdomain.User) error {
 	result := r.db.Save(user)
 	if result.Error != nil {
 		return result.Error
@@ -63,7 +63,7 @@ func (r *MySQLUserRepository) UpdateUser(user *domain.User) error {
 	return nil
 }
 
-func (r *MySQLUserRepository) DeleteUser(user *domain.User) error {
+func (r *MySQLUserRepository) DeleteUser(user *userdomain.User) error {
 	result := r.db.Delete(user)
 	if result.Error != nil {
 		return result.Error

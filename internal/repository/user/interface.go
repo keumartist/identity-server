@@ -1,4 +1,4 @@
-package repository
+package user
 
 import domain "art-sso/internal/domain/user"
 

@@ -1,10 +1,11 @@
 package bootstrap
 
 import (
-	handler "art-sso/internal/handler/user"
-	repo "art-sso/internal/repository/user"
+	userhandler "art-sso/internal/handler/user"
+	userrepo "art-sso/internal/repository/user"
 	tokenservice "art-sso/internal/service/token"
 	userservice "art-sso/internal/service/user"
+
 	"crypto/rsa"
 	"errors"
 	"fmt"
@@ -22,7 +23,7 @@ func InitApp() *fiber.App {
 
 	privateKey, secretKey, keyErr := getKeys()
 	if keyErr != nil {
-		fmt.Printf("Could not init app: %v", keyErr)
+		fmt.Errorf("Could not init app: %v", keyErr)
 		return nil
 	}
 
@@ -32,10 +33,10 @@ func InitApp() *fiber.App {
 		return nil
 	}
 
-	userRepo := repo.NewMySQLUserRepository(db)
+	userRepo := userrepo.NewMySQLUserRepository(db)
 	tokenService := tokenservice.NewTokenService(privateKey, secretKey, issuer)
 	userService := userservice.NewUserService(userRepo, tokenService)
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := userhandler.NewUserHandler(userService)
 
 	app := fiber.New()
 	userHandler.RegisterRoutes(app)
