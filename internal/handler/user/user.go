@@ -3,7 +3,6 @@ package user
 import (
 	"net/http"
 
-	userdomain "art-sso/internal/domain/user"
 	userservice "art-sso/internal/service/user"
 
 	"github.com/gofiber/fiber/v2"
@@ -20,25 +19,21 @@ func NewUserHandler(service userservice.UserService) *UserHandlerImpl {
 }
 
 func (h *UserHandlerImpl) RegisterRoutes(app *fiber.App) {
-	app.Post("/users", h.CreateUserByEmail)
+	app.Post("/users", h.CreateUser)
 	app.Get("/users/:id", h.GetUserByID)
 	app.Get("/users", h.GetUsers)
 	app.Put("/users/:id", h.UpdateUser)
 	app.Delete("/users/:id", h.DeleteUser)
 }
 
-func (h *UserHandlerImpl) CreateUserByEmail(c *fiber.Ctx) error {
-	type RequestBody struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
-	var requestBody RequestBody
+func (h *UserHandlerImpl) CreateUser(c *fiber.Ctx) error {
+	var requestBody CreateUserRequest
 	if err := c.BodyParser(&requestBody); err != nil {
 		return c.Status(http.StatusBadRequest).SendString(err.Error())
 	}
 
-	createdUser, err := h.service.CreateUser(requestBody.Email, requestBody.Password)
+	input := userservice.CreateUserInput{Email: requestBody.Email, Password: requestBody.Password}
+	createdUser, err := h.service.CreateUser(input)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).SendString("User not found")
 	}
@@ -48,13 +43,11 @@ func (h *UserHandlerImpl) CreateUserByEmail(c *fiber.Ctx) error {
 
 func (h *UserHandlerImpl) GetUserByID(c *fiber.Ctx) error {
 	id := c.Params("id")
-	user, err := h.service.GetUserByID(id)
+	input := userservice.GetUserByIDInput{ID: id}
+
+	user, err := h.service.GetUserByID(input)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).SendString(err.Error())
-	}
-
-	if user == nil {
-		return c.Status(http.StatusNotFound).SendString("User not found")
 	}
 
 	return c.JSON(user)
@@ -62,29 +55,26 @@ func (h *UserHandlerImpl) GetUserByID(c *fiber.Ctx) error {
 
 func (h *UserHandlerImpl) GetUsers(c *fiber.Ctx) error {
 	email := c.Query("email")
-	if email == "" {
-		return c.Status(http.StatusBadRequest).SendString("Email query parameter is required")
-	}
+	input := userservice.GetUserByEmailInput{Email: email}
 
-	user, err := h.service.GetUserByEmail(email)
+	user, err := h.service.GetUserByEmail(input)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).SendString(err.Error())
-	}
-
-	if user == nil {
-		return c.Status(http.StatusNotFound).SendString("User not found")
 	}
 
 	return c.JSON(user)
 }
 
 func (h *UserHandlerImpl) UpdateUser(c *fiber.Ctx) error {
-	user := new(userdomain.User)
-	if err := c.BodyParser(user); err != nil {
+	var requestBody UpdateUserRequest
+	if err := c.BodyParser(&requestBody); err != nil {
 		return c.Status(http.StatusBadRequest).SendString(err.Error())
 	}
 
-	err := h.service.UpdateUser(user)
+	id := c.Params("id")
+
+	input := userservice.UpdateUserInput{ID: id, Email: &requestBody.Email, Password: &requestBody.Password}
+	err := h.service.UpdateUser(input)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).SendString(err.Error())
 	}
@@ -94,12 +84,9 @@ func (h *UserHandlerImpl) UpdateUser(c *fiber.Ctx) error {
 
 func (h *UserHandlerImpl) DeleteUser(c *fiber.Ctx) error {
 	id := c.Params("id")
-	user, err := h.service.GetUserByID(id)
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).SendString(err.Error())
-	}
+	input := userservice.DeleteUserInput{ID: id}
 
-	err = h.service.DeleteUser(user)
+	err := h.service.DeleteUser(input)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).SendString(err.Error())
 	}

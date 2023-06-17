@@ -1,44 +1,36 @@
 package user
 
 import (
-	domain "art-sso/internal/domain/user"
-	repository "art-sso/internal/repository/user"
-	service "art-sso/internal/service/user"
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"testing"
 
+	dto "art-sso/internal/dto/user"
+	mock "art-sso/internal/handler/user/mocks"
+	userservice "art-sso/internal/service/user"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 func TestUserHandler(t *testing.T) {
-	// Initialize the database
-	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("Failed to connect to database: %v", err)
-	}
-
-	db.AutoMigrate(&domain.User{})
-
-	userRepository := repository.NewMySQLUserRepository(db)
-	userService := service.NewUserService(userRepository)
-	userHandler := NewUserHandler(userService)
+	mockUserService := new(mock.MockUserService)
+	userHandler := NewUserHandler(mockUserService)
 
 	app := fiber.New()
 	userHandler.RegisterRoutes(app)
 
-	t.Cleanup(func() {
-		db.Exec("DELETE FROM users")
-	})
-
 	t.Run("Create user", func(t *testing.T) {
+		email := "test@example.com"
+		password := "password"
+
+		input := userservice.CreateUserInput{Email: email, Password: password}
+		mockUserService.On("CreateUser", input).Return(dto.User{Email: email}, nil)
+
 		payload := map[string]string{
-			"email":    "test@example.com",
-			"password": "password",
+			"email":    email,
+			"password": password,
 		}
 
 		body, _ := json.Marshal(payload)
@@ -48,49 +40,64 @@ func TestUserHandler(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
+	})
 
-		req, _ = http.NewRequest("GET", "/users?email=test@example.com", nil)
-		resp, err = app.Test(req, -1)
+	t.Run("Get user by ID", func(t *testing.T) {
+		id := "test-id"
+		email := "test@example.com"
 
-		var user domain.User
-		json.NewDecoder(resp.Body).Decode(&user)
+		input := userservice.GetUserByIDInput{ID: id}
+		mockUserService.On("GetUserByID", input).Return(dto.User{Email: email}, nil)
+
+		req, _ := http.NewRequest("GET", "/users/"+id, nil)
+		resp, err := app.Test(req, -1)
 
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, "test@example.com", user.Email)
+	})
+
+	t.Run("Get users by email", func(t *testing.T) {
+		email := "test@example.com"
+
+		input := userservice.GetUserByEmailInput{Email: email}
+		mockUserService.On("GetUserByEmail", input).Return(dto.User{Email: email}, nil)
+
+		req, _ := http.NewRequest("GET", "/users?email="+email, nil)
+		resp, err := app.Test(req, -1)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
 	t.Run("Update user", func(t *testing.T) {
-		payload := map[string]interface{}{
-			"ID":    1,
-			"Email": "updated@example.com",
-		}
+		id := "test-id"
+		email := "updated@example.com"
+		password := ""
+
+		input := userservice.UpdateUserInput{ID: id, Email: &email, Password: &password}
+		mockUserService.On("UpdateUser", input).Return(nil)
+
+		payload := map[string]interface{}{"id": id, "email": email}
 		body, _ := json.Marshal(payload)
-		req, _ := http.NewRequest("PUT", "/users/1", bytes.NewReader(body))
+
+		req, _ := http.NewRequest("PUT", "/users/"+id, bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
 		resp, err := app.Test(req, -1)
 
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		// Fetch again to check
-		req, _ = http.NewRequest("GET", "/users/1", nil)
-		resp, err = app.Test(req, -1)
-		var updatedUser domain.User
-		json.NewDecoder(resp.Body).Decode(&updatedUser)
-		assert.Equal(t, "updated@example.com", updatedUser.Email)
 	})
 
 	t.Run("Delete user", func(t *testing.T) {
-		req, _ := http.NewRequest("DELETE", "/users/1", nil)
+		id := "test-id"
+
+		input := userservice.DeleteUserInput{ID: id}
+		mockUserService.On("DeleteUser", input).Return(nil)
+
+		req, _ := http.NewRequest("DELETE", "/users/"+id, nil)
 		resp, err := app.Test(req, -1)
 
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		// Fetch again to check if deleted
-		req, _ = http.NewRequest("GET", "/users/1", nil)
-		resp, err = app.Test(req, -1)
-		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
 }

@@ -60,6 +60,7 @@ func (s *UserServiceImpl) GetUserByEmail(input GetUserByEmailInput) (dto.User, e
 	return UserDomainToDto(user), nil
 }
 
+// TODO: Fix to make password field to be necessary
 func (s *UserServiceImpl) UpdateUser(input UpdateUserInput) error {
 	id, err := strconv.ParseUint(input.ID, 10, 32)
 	if err != nil {
@@ -70,12 +71,10 @@ func (s *UserServiceImpl) UpdateUser(input UpdateUserInput) error {
 		ID: uint(id),
 	}
 
-	// Check if Email is provided
 	if input.Email != nil {
 		user.Email = *input.Email
 	}
 
-	// Check if Password is provided
 	if input.Password != nil {
 		hashedPassword, err := util.HashPassword(*input.Password)
 		if err != nil {
