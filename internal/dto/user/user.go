@@ -2,6 +2,7 @@ package user
 
 type User struct {
 	ID                string             `json:"id"`
+	Name              string             `json:"name"`
 	Email             string             `json:"email"`
 	EmailVerified     bool               `json:"emailVerified"`
 	SocialConnections []SocialConnection `json:"socialConnections"`

@@ -10,6 +10,7 @@ type User struct {
 	gorm.Model
 	ID                uint   `gorm:"primaryKey"`
 	Email             string `gorm:"type:varchar(256);unique"`
+	Name              string
 	Password          string
 	RefreshToken      string
 	VerificationCode  *string

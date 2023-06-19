@@ -5,10 +5,10 @@ type CreateUserInput struct {
 	Password string
 }
 
-type UpdateUserInput struct {
-	ID       string
-	Email    *string
-	Password *string
+type UpdateUserProfileInput struct {
+	ID    string
+	Email *string
+	Name  *string
 }
 
 type GetUserByIDInput struct {

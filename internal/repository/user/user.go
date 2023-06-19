@@ -63,6 +63,19 @@ func (r *MySQLUserRepository) UpdateUser(user *userdomain.User) error {
 	return nil
 }
 
+func (r *MySQLUserRepository) UpdateUserProfile(user *userdomain.User) error {
+	result := r.db.Model(user).Updates(map[string]interface{}{
+		"email": user.Email,
+		"name":  user.Name,
+	})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
 func (r *MySQLUserRepository) DeleteUser(user *userdomain.User) error {
 	result := r.db.Delete(user)
 	if result.Error != nil {

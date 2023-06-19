@@ -3,21 +3,19 @@ package user
 import (
 	domain "art-sso/internal/domain/user"
 	dto "art-sso/internal/dto/user"
-	userrepository "art-sso/internal/repository/user"
-	tokenservice "art-sso/internal/service/token"
+	repository "art-sso/internal/repository/user"
 	util "art-sso/internal/service/util"
+	"fmt"
 	"strconv"
 )
 
 type UserServiceImpl struct {
-	repo     userrepository.UserRepository
-	tokenSvc tokenservice.TokenService
+	repo repository.UserRepository
 }
 
-func NewUserService(repo userrepository.UserRepository, tokenSvc tokenservice.TokenService) UserService {
+func NewUserService(repo repository.UserRepository) UserService {
 	return &UserServiceImpl{
-		repo:     repo,
-		tokenSvc: tokenSvc,
+		repo: repo,
 	}
 }
 
@@ -60,32 +58,24 @@ func (s *UserServiceImpl) GetUserByEmail(input GetUserByEmailInput) (dto.User, e
 	return UserDomainToDto(user), nil
 }
 
-// TODO: Fix to make password field to be necessary
-func (s *UserServiceImpl) UpdateUser(input UpdateUserInput) error {
+func (s *UserServiceImpl) UpdateUserProfile(input UpdateUserProfileInput) error {
 	id, err := strconv.ParseUint(input.ID, 10, 32)
+
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid user ID format: %v", err)
 	}
 
 	user := &domain.User{
-		ID: uint(id),
+		ID:   uint(id),
+		Name: *input.Name,
 	}
 
-	if input.Email != nil {
-		user.Email = *input.Email
+	err = s.repo.UpdateUserProfile(user)
+	if err != nil {
+		return fmt.Errorf("failed to update user profile in repository: %v", err)
 	}
 
-	if input.Password != nil {
-		hashedPassword, err := util.HashPassword(*input.Password)
-		if err != nil {
-			return err
-		}
-		user.Password = hashedPassword
-	}
-
-	err = s.repo.UpdateUser(user)
-
-	return err
+	return nil
 }
 
 func (s *UserServiceImpl) DeleteUser(input DeleteUserInput) error {

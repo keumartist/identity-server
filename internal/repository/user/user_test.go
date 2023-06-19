@@ -61,6 +61,20 @@ func TestMySQLUserRepository(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("Update user profile", func(t *testing.T) {
+		user, err := userRepo.GetUserByID("1")
+		assert.NoError(t, err)
+
+		user.Name = "newusername"
+
+		err = userRepo.UpdateUserProfile(user)
+		assert.NoError(t, err)
+
+		updatedUser, err := userRepo.GetUserByID("1")
+		assert.NoError(t, err)
+		assert.Equal(t, "newusername", updatedUser.Name)
+	})
+
 	t.Run("Delete user", func(t *testing.T) {
 		user, err := userRepo.GetUserByID("1")
 

@@ -30,6 +30,11 @@ func (m *MockUserRepository) UpdateUser(user *domain.User) error {
 	return args.Error(0)
 }
 
+func (m *MockUserRepository) UpdateUserProfile(user *domain.User) error {
+	args := m.Called(user)
+	return args.Error(0)
+}
+
 func (m *MockUserRepository) DeleteUser(user *domain.User) error {
 	args := m.Called(user)
 	return args.Error(0)
