@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -35,4 +36,12 @@ func (u *User) VerifyEmail(code string) error {
 
 	u.EmailVerified = true
 	return nil
+}
+
+func (u *User) IDAsString() string {
+	return strconv.FormatUint(uint64(u.ID), 10)
+}
+
+func (u *User) IsEmailVerified() bool {
+	return u.EmailVerified
 }

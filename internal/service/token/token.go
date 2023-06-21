@@ -36,34 +36,34 @@ func NewTokenService(privateKey *rsa.PrivateKey, secretKey, issuer string) Token
 	}
 }
 
-func (s *TokenServiceImpl) GenerateAccessToken(id, email string, expireAt uint) (string, error) {
+func (s *TokenServiceImpl) GenerateAccessToken(id, email string, expirationInSeconds uint) (string, error) {
 	claims := Claims{
 		Sub: id,
 		Iss: s.issuer,
 		Iat: time.Now().Unix(),
-		Exp: time.Now().Add(time.Duration(expireAt) * time.Second).Unix(),
+		Exp: time.Now().Add(time.Duration(expirationInSeconds) * time.Second).Unix(),
 	}
 
 	return s.generateToken(jwt.SigningMethodHS256, claims)
 }
 
-func (s *TokenServiceImpl) GenerateRefreshToken(id, email string, expireAt uint) (string, error) {
+func (s *TokenServiceImpl) GenerateRefreshToken(id, email string, expirationInSeconds uint) (string, error) {
 	claims := Claims{
 		Sub: id,
 		Iss: s.issuer,
 		Iat: time.Now().Unix(),
-		Exp: time.Now().Add(time.Duration(expireAt) * time.Second).Unix(),
+		Exp: time.Now().Add(time.Duration(expirationInSeconds) * time.Second).Unix(),
 	}
 
 	return s.generateToken(jwt.SigningMethodHS256, claims)
 }
 
-func (s *TokenServiceImpl) GenerateIdToken(id, email string, expireAt uint) (string, error) {
+func (s *TokenServiceImpl) GenerateIdToken(id, email string, expirationInSeconds uint) (string, error) {
 	claims := Claims{
 		Sub: id,
 		Iss: s.issuer,
 		Iat: time.Now().Unix(),
-		Exp: time.Now().Add(time.Duration(expireAt) * time.Second).Unix(),
+		Exp: time.Now().Add(time.Duration(expirationInSeconds) * time.Second).Unix(),
 		AdditionalClaimsForIdToken: AdditionalClaimsForIdToken{
 			Ema: email,
 		},
