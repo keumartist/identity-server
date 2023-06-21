@@ -3,9 +3,9 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 
 	"art-sso/internal/domain/user"
+	errors "art-sso/internal/error"
 	repository "art-sso/internal/repository/user"
 	mailservice "art-sso/internal/service/mail"
 	tokenservice "art-sso/internal/service/token"
@@ -32,19 +32,18 @@ func (s *AuthServiceImpl) SignUpWithEmail(input SignUpInput) (Tokens, error) {
 	existingUser, err := s.userRepo.GetUserByEmail(input.Email)
 	if err == nil {
 		if existingUser.IsEmailVerified() {
-			return tokens, errors.New("email already in use")
+			return tokens, errors.ErrEmailInUse
 		}
 
 		verificationCode := generateVerificationCode()
 		err = s.userRepo.UpdateVerificationCode(existingUser, verificationCode)
-
 		if err != nil {
-			return tokens, err
+			return tokens, errors.ErrInternal
 		}
 
 		err = s.mailService.SendVerificationEmail(input.Email, verificationCode)
 		if err != nil {
-			return tokens, err
+			return tokens, errors.ErrSendingEmail
 		}
 
 		return tokens, nil
@@ -54,7 +53,7 @@ func (s *AuthServiceImpl) SignUpWithEmail(input SignUpInput) (Tokens, error) {
 
 	hashedPassword, err := hash.HashPassword(input.Password)
 	if err != nil {
-		return tokens, err
+		return tokens, errors.ErrInternal
 	}
 
 	newUser := &user.User{
@@ -64,12 +63,12 @@ func (s *AuthServiceImpl) SignUpWithEmail(input SignUpInput) (Tokens, error) {
 
 	err = s.userRepo.CreateUnverifiedUser(newUser, verificationCode)
 	if err != nil {
-		return tokens, err
+		return tokens, errors.ErrInternal
 	}
 
 	err = s.mailService.SendVerificationEmail(input.Email, verificationCode)
 	if err != nil {
-		return tokens, err
+		return tokens, errors.ErrSendingEmail
 	}
 
 	return tokens, nil
@@ -80,16 +79,16 @@ func (s *AuthServiceImpl) SignInWithEmail(input SignInInput) (Tokens, error) {
 
 	user, err := s.userRepo.GetUserByEmail(input.Email)
 	if err != nil {
-		return tokens, err
+		return tokens, errors.ErrInternal
 	}
 
 	if !hash.VerifyPassword(input.Password, user.Password) || !user.IsEmailVerified() {
-		return tokens, errors.New("invalid credentials or email not verified")
+		return tokens, errors.ErrInvalidCredentials
 	}
 
 	idToken, accessToken, refreshToken, err := s.generateTokens(user)
 	if err != nil {
-		return tokens, err
+		return tokens, errors.ErrInternal
 	}
 
 	tokens.IdToken = idToken
