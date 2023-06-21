@@ -81,9 +81,7 @@ func TestAuthService(t *testing.T) {
 
 		mockUserRepo.On("GetUserByEmail", email).Return(&user.User{Email: email, EmailVerified: true, Password: hashedPassword}, nil)
 
-		mockTokenService.On("GenerateIdToken", mock.Anything, email, mock.Anything).Return("idToken", nil)
-		mockTokenService.On("GenerateAccessToken", mock.Anything, email, mock.Anything).Return("accessToken", nil)
-		mockTokenService.On("GenerateRefreshToken", mock.Anything, email, mock.Anything).Return("refreshToken`", nil)
+		mockTokenService.On("GenerateToken", mock.Anything).Return("idToken", nil)
 
 		tokens, err := authService.SignInWithEmail(signInInput)
 

@@ -11,17 +11,7 @@ type MockTokenService struct {
 	mock.Mock
 }
 
-func (m *MockTokenService) GenerateIdToken(userID, email string, expirationInSeconds uint) (string, error) {
-	args := m.Called(userID, email, expirationInSeconds)
-	return args.String(0), args.Error(1)
-}
-
-func (m *MockTokenService) GenerateRefreshToken(userID, email string, expirationInSeconds uint) (string, error) {
-	args := m.Called(userID, email, expirationInSeconds)
-	return args.String(0), args.Error(1)
-}
-
-func (m *MockTokenService) GenerateAccessToken(userID, email string, expirationInSeconds uint) (string, error) {
-	args := m.Called(userID, email, expirationInSeconds)
+func (m *MockTokenService) GenerateToken(input token.GenerateTokenInput) (string, error) {
+	args := m.Called(input)
 	return args.String(0), args.Error(1)
 }

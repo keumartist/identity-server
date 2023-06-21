@@ -99,17 +99,17 @@ func (s *AuthServiceImpl) SignInWithEmail(input SignInInput) (Tokens, error) {
 }
 
 func (s *AuthServiceImpl) generateTokens(user *user.User) (string, string, string, error) {
-	idToken, err := s.tokenService.GenerateIdToken(user.IDAsString(), user.Email, 60*60*24*3)
+	idToken, err := s.tokenService.GenerateToken(tokenservice.GenerateTokenInput{Id: user.IDAsString(), Email: user.Email, ExpirationInSeconds: 60 * 60 * 24 * 3, TokenType: tokenservice.IdToken})
 	if err != nil {
 		return "", "", "", err
 	}
 
-	accessToken, err := s.tokenService.GenerateAccessToken(user.IDAsString(), user.Email, 60*60*24*3)
+	accessToken, err := s.tokenService.GenerateToken(tokenservice.GenerateTokenInput{Id: user.IDAsString(), Email: user.Email, ExpirationInSeconds: 60 * 60 * 24 * 3, TokenType: tokenservice.AccessToken})
 	if err != nil {
 		return "", "", "", err
 	}
 
-	refreshToken, err := s.tokenService.GenerateRefreshToken(user.IDAsString(), user.Email, 60*60*24*7)
+	refreshToken, err := s.tokenService.GenerateToken(tokenservice.GenerateTokenInput{user.IDAsString(), user.Email, 60 * 60 * 24 * 7, tokenservice.RefreshToken})
 	if err != nil {
 		return "", "", "", err
 	}

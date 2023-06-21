@@ -28,7 +28,14 @@ func TestTokenService(t *testing.T) {
 
 	t.Run("Generate access token", func(t *testing.T) {
 		expirationInSeconds := uint(3600)
-		tokenString, err := tokenService.GenerateAccessToken("1", "test1@example.com", expirationInSeconds)
+		input := token.GenerateTokenInput{
+			Id:                  "1",
+			Email:               "test@email.com",
+			TokenType:           token.AccessToken,
+			ExpirationInSeconds: expirationInSeconds,
+		}
+		tokenString, err := tokenService.GenerateToken(input)
+
 		assert.Nil(t, err)
 
 		token, err := jwt.ParseWithClaims(tokenString, &token.Claims{}, func(token *jwt.Token) (interface{}, error) {
@@ -49,7 +56,14 @@ func TestTokenService(t *testing.T) {
 
 	t.Run("Generate refresh token", func(t *testing.T) {
 		expirationInSeconds := uint(7200)
-		tokenString, err := tokenService.GenerateRefreshToken("2", "test2@example.com", expirationInSeconds)
+		input := token.GenerateTokenInput{
+			Id:                  "2",
+			Email:               "test@email.com",
+			TokenType:           token.RefreshToken,
+			ExpirationInSeconds: expirationInSeconds,
+		}
+		tokenString, err := tokenService.GenerateToken(input)
+
 		assert.Nil(t, err)
 
 		token, err := jwt.ParseWithClaims(tokenString, &tokenservice.Claims{}, func(token *jwt.Token) (interface{}, error) {
@@ -71,9 +85,15 @@ func TestTokenService(t *testing.T) {
 
 	t.Run("Generate ID token", func(t *testing.T) {
 		expirationInSeconds := uint(3600)
-		tokenString, err := tokenService.GenerateIdToken("3", "test3@example.com", expirationInSeconds)
-		assert.Nil(t, err)
+		input := token.GenerateTokenInput{
+			Id:                  "3",
+			Email:               "test3@example.com",
+			TokenType:           token.IdToken,
+			ExpirationInSeconds: expirationInSeconds,
+		}
+		tokenString, err := tokenService.GenerateToken(input)
 
+		assert.Nil(t, err)
 		token, err := jwt.ParseWithClaims(tokenString, &tokenservice.Claims{}, func(token *jwt.Token) (interface{}, error) {
 			return &privateKey.PublicKey, nil
 		})

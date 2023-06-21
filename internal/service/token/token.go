@@ -36,61 +36,51 @@ func NewTokenService(privateKey *rsa.PrivateKey, secretKey, issuer string) Token
 	}
 }
 
-func (s *TokenServiceImpl) GenerateAccessToken(id, email string, expirationInSeconds uint) (string, error) {
+func (s *TokenServiceImpl) GenerateToken(input GenerateTokenInput) (string, error) {
 	claims := Claims{
-		Sub: id,
+		Sub: input.Id,
 		Iss: s.issuer,
 		Iat: time.Now().Unix(),
-		Exp: time.Now().Add(time.Duration(expirationInSeconds) * time.Second).Unix(),
+		Exp: time.Now().Add(time.Duration(input.ExpirationInSeconds) * time.Second).Unix(),
 	}
 
-	return s.generateToken(jwt.SigningMethodHS256, claims)
-}
-
-func (s *TokenServiceImpl) GenerateRefreshToken(id, email string, expirationInSeconds uint) (string, error) {
-	claims := Claims{
-		Sub: id,
-		Iss: s.issuer,
-		Iat: time.Now().Unix(),
-		Exp: time.Now().Add(time.Duration(expirationInSeconds) * time.Second).Unix(),
+	if input.TokenType == IdToken {
+		claims.AdditionalClaimsForIdToken = AdditionalClaimsForIdToken{
+			Ema: input.Email,
+		}
+		return s.signToken(jwt.SigningMethodRS256, claims)
 	}
 
-	return s.generateToken(jwt.SigningMethodHS256, claims)
+	return s.signToken(jwt.SigningMethodHS256, claims)
 }
 
-func (s *TokenServiceImpl) GenerateIdToken(id, email string, expirationInSeconds uint) (string, error) {
-	claims := Claims{
-		Sub: id,
-		Iss: s.issuer,
-		Iat: time.Now().Unix(),
-		Exp: time.Now().Add(time.Duration(expirationInSeconds) * time.Second).Unix(),
-		AdditionalClaimsForIdToken: AdditionalClaimsForIdToken{
-			Ema: email,
-		},
+func (s *TokenServiceImpl) VerifyToken(input VerifyTokenInput) (bool, string, string, error) {
+	var validationKey interface{}
+	var claims Claims
+
+	if input.TokenType == IdToken {
+		validationKey = s.privateKey.Public()
+	} else {
+		validationKey = []byte(s.secretKey)
 	}
 
-	return s.generateToken(jwt.SigningMethodRS256, claims)
+	token, err := jwt.ParseWithClaims(input.Token, &claims, func(token *jwt.Token) (interface{}, error) {
+		return validationKey, nil
+	})
 
+	if err != nil || !token.Valid {
+		return false, "", "", errors.New("Invalid token")
+	}
+
+	return true, claims.Sub, claims.Ema, nil
 }
 
-func (s *TokenServiceImpl) generateToken(method jwt.SigningMethod, claims jwt.Claims) (string, error) {
+func (s *TokenServiceImpl) signToken(method jwt.SigningMethod, claims jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(method, claims)
 
 	if method.Alg() == jwt.SigningMethodRS256.Alg() {
-		signedToken, err := token.SignedString(s.privateKey)
-
-		if err != nil {
-			return "", errors.New("could not sign the token")
-		}
-
-		return signedToken, nil
+		return token.SignedString(s.privateKey)
 	}
 
-	signedToken, err := token.SignedString([]byte(s.secretKey))
-
-	if err != nil {
-		return "", errors.New("could not sign the token")
-	}
-
-	return signedToken, nil
+	return token.SignedString([]byte(s.secretKey))
 }
