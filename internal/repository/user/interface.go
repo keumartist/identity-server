@@ -8,5 +8,8 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*domain.User, error)
 	UpdateUser(user *domain.User) error
 	UpdateUserProfile(user *domain.User) error
+	UpdateVerificationCode(user *domain.User, verficationCode string) error
 	DeleteUser(user *domain.User) error
+	CreateUnverifiedUser(user *domain.User, verificationCode string) error
+	VerifyUser(email, verificationCode string) error
 }

@@ -83,3 +83,55 @@ func (r *MySQLUserRepository) DeleteUser(user *userdomain.User) error {
 	}
 	return nil
 }
+
+func (r *MySQLUserRepository) CreateUnverifiedUser(user *userdomain.User, verificationCode string) error {
+	user.VerificationCode = &verificationCode
+	user.EmailVerified = false
+
+	result := r.db.Create(user)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (r *MySQLUserRepository) UpdateVerificationCode(user *userdomain.User, verificationCode string) error {
+	user.VerificationCode = &verificationCode
+	user.EmailVerified = false
+
+	result := r.db.Model(user).Updates(map[string]interface{}{
+		"verification_code": user.VerificationCode,
+		"email_verified":    user.EmailVerified,
+	})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (r *MySQLUserRepository) VerifyUser(email, verificationCode string) error {
+	var user userdomain.User
+	result := r.db.Where("email = ? AND verification_code = ?", email, verificationCode).First(&user)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return errors.New("Invalid email or verification code")
+		} else {
+			return result.Error
+		}
+	}
+
+	user.EmailVerified = true
+
+	empty := ""
+	user.VerificationCode = &empty
+
+	updateResult := r.db.Save(&user)
+	if updateResult.Error != nil {
+		return updateResult.Error
+	}
+	return nil
+}

@@ -84,4 +84,37 @@ func TestMySQLUserRepository(t *testing.T) {
 
 		assert.NoError(t, err)
 	})
+
+	t.Run("Create unverified user", func(t *testing.T) {
+		verificationCode := "123456"
+		user := domain.User{
+			Email: "unverified@example.com",
+		}
+		err := userRepo.CreateUnverifiedUser(&user, verificationCode)
+
+		assert.NoError(t, err)
+
+		createdUser, err := userRepo.GetUserByEmail("unverified@example.com")
+		assert.NoError(t, err)
+		assert.NotNil(t, createdUser)
+		assert.False(t, createdUser.EmailVerified)
+		assert.Equal(t, verificationCode, *createdUser.VerificationCode)
+	})
+
+	t.Run("Verify user", func(t *testing.T) {
+		verificationCode := "123456"
+		email := "unverified@example.com"
+
+		err := userRepo.VerifyUser(email, verificationCode)
+
+		assert.NoError(t, err)
+
+		verifiedUser, err := userRepo.GetUserByEmail(email)
+		assert.NoError(t, err)
+		assert.NotNil(t, verifiedUser)
+		assert.True(t, verifiedUser.EmailVerified)
+
+		// Check that verification code is cleared after verification
+		assert.Equal(t, "", *verifiedUser.VerificationCode)
+	})
 }
