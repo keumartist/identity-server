@@ -24,6 +24,9 @@ go.work
 build/
 
 # env
-.env.*
-.env
+*.env
+
+# key
+*.key
+*.pem
 

@@ -9,6 +9,7 @@ import (
 	tokenservice "art-sso/internal/service/token"
 	userservice "art-sso/internal/service/user"
 	"log"
+	"os"
 
 	"fmt"
 
@@ -18,7 +19,16 @@ import (
 )
 
 func InitHTTPServer() error {
-	db, _ := gorm.Open(mysql.Open("mysql_connection_string"), &gorm.Config{})
+	connStr := os.Getenv("DATABASE_CONNECTION_STRING")
+	if connStr == "" {
+		log.Fatal("Database connection is not set")
+	}
+
+	db, err := gorm.Open(mysql.Open(connStr), &gorm.Config{})
+
+	if err != nil {
+		return fmt.Errorf("Could not connect db: %v", err)
+	}
 
 	privateKey, secretKey, keyErr := getKeys()
 	if keyErr != nil {

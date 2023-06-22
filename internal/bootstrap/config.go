@@ -12,7 +12,7 @@ import (
 
 func getKeys() (*rsa.PrivateKey, string, error) {
 	// Private Key for RS256
-	pemBytes, err := ioutil.ReadFile(os.Getenv("PRIVATE_KEY_PATH_FOR_RS256_ID_TOKEN"))
+	pemBytes, err := ioutil.ReadFile(os.Getenv("PRIVATE_KEY_PATH"))
 	if err != nil {
 		return nil, "", fmt.Errorf("Could not read private key: %v", err)
 	}
@@ -23,16 +23,17 @@ func getKeys() (*rsa.PrivateKey, string, error) {
 	}
 
 	// Secret Key for HS256
-	secretKey := os.Getenv("SECRET_KEY_FOR_HS256_ACCESS_TOKEN")
-	if secretKey == "" {
-		return nil, "", errors.New("Secret key not found")
+	secretKeyBytes, err := ioutil.ReadFile(os.Getenv("SECRET_KEY_PATH"))
+	if err != nil {
+		return nil, "", fmt.Errorf("Could not read secret key: %v", err)
 	}
+	secretKey := string(secretKeyBytes)
 
 	return privateKey, secretKey, nil
 }
 
 func getIssuer() (string, error) {
-	issuer := os.Getenv("ISSUER_FOR_TOKEN")
+	issuer := os.Getenv("ISSUER")
 	if issuer == "" {
 		return "", errors.New("Issuer not found")
 	}
