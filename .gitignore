@@ -23,3 +23,7 @@ go.work
 # Build output
 build/
 
+# env
+.env.*
+.env
+
