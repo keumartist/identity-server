@@ -73,8 +73,8 @@ func (h *UserHandlerImpl) UpdateUser(c *fiber.Ctx) error {
 
 	id := c.Params("id")
 
-	input := userservice.UpdateUserInput{ID: id, Email: &requestBody.Email, Password: &requestBody.Password}
-	err := h.service.UpdateUser(input)
+	input := userservice.UpdateUserProfileInput{ID: id, Email: &requestBody.Email, Name: &requestBody.Name}
+	err := h.service.UpdateUserProfile(input)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).SendString(err.Error())
 	}

@@ -11,6 +11,7 @@ import (
 )
 
 type AuthHandlerImpl struct {
+	api.UnimplementedAuthServiceServer
 	tokenService service.TokenService
 }
 

@@ -13,6 +13,6 @@ func TestHashPassword(t *testing.T) {
 	hashedPassword, err := hash.HashPassword(password)
 	assert.Nil(t, err)
 
-	err = hash.VerifyPassword(password, hashedPassword)
-	assert.Nil(t, err)
+	verified := hash.VerifyPassword(password, hashedPassword)
+	assert.True(t, verified)
 }

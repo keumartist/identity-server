@@ -69,15 +69,15 @@ func TestUserHandler(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("Update user", func(t *testing.T) {
+	t.Run("Update user profile", func(t *testing.T) {
 		id := "test-id"
 		email := "updated@example.com"
-		password := ""
+		name := "newname"
 
-		input := userservice.UpdateUserInput{ID: id, Email: &email, Password: &password}
-		mockUserService.On("UpdateUser", input).Return(nil)
+		input := userservice.UpdateUserProfileInput{ID: id, Email: &email, Name: &name}
+		mockUserService.On("UpdateUserProfile", input).Return(nil)
 
-		payload := map[string]interface{}{"id": id, "email": email}
+		payload := map[string]interface{}{"id": id, "email": email, "name": name}
 		body, _ := json.Marshal(payload)
 
 		req, _ := http.NewRequest("PUT", "/users/"+id, bytes.NewReader(body))

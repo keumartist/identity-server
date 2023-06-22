@@ -26,7 +26,7 @@ func (m *MockUserService) GetUserByEmail(input userservice.GetUserByEmailInput) 
 	return args.Get(0).(dto.User), args.Error(1)
 }
 
-func (m *MockUserService) UpdateUser(input userservice.UpdateUserInput) error {
+func (m *MockUserService) UpdateUserProfile(input userservice.UpdateUserProfileInput) error {
 	return m.Called(input).Error(0)
 }
 
