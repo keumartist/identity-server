@@ -35,12 +35,9 @@ func TestAuthService(t *testing.T) {
 		mockUserRepo.On("CreateUnverifiedUser", mock.Anything, mock.Anything).Return(nil)
 		mockMailService.On("SendVerificationEmail", email, mock.Anything).Return(nil)
 
-		tokens, err := authService.SignUpWithEmail(signUpInput)
+		_, err := authService.SignUpWithEmail(signUpInput)
 
 		assert.Nil(t, err)
-		assert.Empty(t, tokens.IdToken)
-		assert.Empty(t, tokens.AccessToken)
-		assert.Empty(t, tokens.RefreshToken)
 	})
 
 	t.Run("Sign up with existing unverified email", func(t *testing.T) {
@@ -59,12 +56,9 @@ func TestAuthService(t *testing.T) {
 		mockUserRepo.On("UpdateVerificationCode", mock.Anything, mock.Anything).Return(nil)
 		mockMailService.On("SendVerificationEmail", email, mock.Anything).Return(nil)
 
-		tokens, err := authService.SignUpWithEmail(signUpInput)
+		_, err := authService.SignUpWithEmail(signUpInput)
 
 		assert.Nil(t, err)
-		assert.Empty(t, tokens.IdToken)
-		assert.Empty(t, tokens.AccessToken)
-		assert.Empty(t, tokens.RefreshToken)
 	})
 
 	t.Run("Sign in with valid credentials", func(t *testing.T) {

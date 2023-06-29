@@ -46,7 +46,7 @@ func (r *MySQLUserRepository) GetUserByEmail(email string) (*userdomain.User, er
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return nil, gorm.ErrRecordNotFound
 		} else {
 			return nil, result.Error
 		}
