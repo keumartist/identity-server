@@ -88,6 +88,9 @@ func (r *MySQLUserRepository) CreateUnverifiedUser(user *userdomain.User, verifi
 	user.VerificationCode = &verificationCode
 	user.EmailVerified = false
 
+	normalRole := userdomain.Role{Name: userdomain.RoleNormal}
+	user.Roles = append(user.Roles, normalRole)
+
 	result := r.db.Create(user)
 	if result.Error != nil {
 		return result.Error
@@ -133,5 +136,27 @@ func (r *MySQLUserRepository) VerifyUser(email, verificationCode string) error {
 	if updateResult.Error != nil {
 		return updateResult.Error
 	}
+	return nil
+}
+
+func (r *MySQLUserRepository) AssignRoleToUser(user *userdomain.User, role userdomain.RoleName) error {
+	if role != userdomain.RoleNormal && role != userdomain.RoleAdmin {
+		return errors.New("Invalid role")
+	}
+
+	for _, existingRole := range user.Roles {
+		if existingRole.Name == role {
+			return errors.New("The user already has this role")
+		}
+	}
+
+	newRole := userdomain.Role{Name: role, UserID: user.ID}
+	user.Roles = append(user.Roles, newRole)
+
+	result := r.db.Save(user)
+	if result.Error != nil {
+		return result.Error
+	}
+
 	return nil
 }
