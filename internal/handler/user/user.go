@@ -22,10 +22,8 @@ func NewUserHandler(service userservice.UserService) *UserHandlerImpl {
 }
 
 func (h *UserHandlerImpl) RegisterRoutes(app *fiber.App, tokenService tokenservice.TokenService) {
-	app.Use("/users/:id", middleware.TokenValidationMiddleware(tokenService))
-
 	app.Post("/users", h.CreateUser)
-	app.Get("/users/me", h.GetMe)
+	app.Get("/users/me", middleware.TokenValidationMiddleware(tokenService), h.GetMe)
 	app.Get("/users", h.GetUsers)
 	app.Put("/users/:id", h.UpdateUser)
 	app.Delete("/users/:id", h.DeleteUser)

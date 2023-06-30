@@ -8,6 +8,7 @@ import (
 
 	dto "art-sso/internal/dto/user"
 	mocks "art-sso/internal/handler/user/mocks"
+	tokenservice "art-sso/internal/service/token"
 	userservice "art-sso/internal/service/user"
 
 	"github.com/gofiber/fiber/v2"
@@ -43,14 +44,19 @@ func TestUserHandler(t *testing.T) {
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 	})
 
-	t.Run("Get user by ID", func(t *testing.T) {
-		id := "test-id"
+	t.Run("Get my profile - failed with invalid token", func(t *testing.T) {
+		userId := "test-id"
 		email := "test@example.com"
+		token := "valid_token"
 
-		input := userservice.GetUserByIDInput{ID: id}
-		mockUserService.On("GetUserByID", input).Return(dto.User{Email: email}, nil)
+		getUserByIdInput := userservice.GetUserByIDInput{ID: userId}
+		verifyTokenInput := tokenservice.VerifyTokenInput{Token: token, TokenType: tokenservice.AccessToken}
 
-		req, _ := http.NewRequest("GET", "/users/"+id, nil)
+		mockUserService.On("GetUserByID", getUserByIdInput).Return(dto.User{Email: email}, nil)
+		mockTokenService.On("VerifyToken", verifyTokenInput).Return(true, userId, "", nil)
+
+		req, _ := http.NewRequest("GET", "/users/me", nil)
+		req.Header.Add("Authorization", "Bearer "+token)
 		resp, err := app.Test(req, -1)
 
 		assert.NoError(t, err)
@@ -74,15 +80,18 @@ func TestUserHandler(t *testing.T) {
 		id := "test-id"
 		email := "updated@example.com"
 		name := "newname"
+		token := "valid_token"
 
 		input := userservice.UpdateUserProfileInput{ID: id, Email: &email, Name: &name}
 		mockUserService.On("UpdateUserProfile", input).Return(nil)
+		mockTokenService.On("ValidateToken", token).Return(id, nil)
 
-		payload := map[string]interface{}{"id": id, "email": email, "name": name}
+		payload := map[string]interface{}{"email": email, "name": name}
 		body, _ := json.Marshal(payload)
 
 		req, _ := http.NewRequest("PUT", "/users/"+id, bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Add("Authorization", "Bearer "+token)
 		resp, err := app.Test(req, -1)
 
 		assert.NoError(t, err)
@@ -91,11 +100,14 @@ func TestUserHandler(t *testing.T) {
 
 	t.Run("Delete user", func(t *testing.T) {
 		id := "test-id"
+		token := "valid_token"
 
 		input := userservice.DeleteUserInput{ID: id}
 		mockUserService.On("DeleteUser", input).Return(nil)
+		mockTokenService.On("ValidateToken", token).Return(id, nil)
 
 		req, _ := http.NewRequest("DELETE", "/users/"+id, nil)
+		req.Header.Add("Authorization", "Bearer "+token)
 		resp, err := app.Test(req, -1)
 
 		assert.NoError(t, err)
