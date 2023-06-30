@@ -1,21 +1,23 @@
-package error
+package customerror
 
 import "fmt"
 
 type CustomError struct {
-	Code    int
+	Code    string
 	Message string
 }
 
 func (e *CustomError) Error() string {
-	return fmt.Sprintf("%d: %s", e.Code, e.Message)
+	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
 var (
-	ErrEmailInUse              = &CustomError{Code: 400, Message: "Email is already in use"}
-	ErrUserNotFound            = &CustomError{Code: 404, Message: "User not found"}
-	ErrInvalidCredentials      = &CustomError{Code: 401, Message: "Invalid credentials"}
-	ErrInternal                = &CustomError{Code: 500, Message: "Internal server error"}
-	ErrSendingEmail            = &CustomError{Code: 500, Message: "Error in sending email"}
-	ErrInvalidVerificationCode = &CustomError{Code: 400, Message: "Verification code is invalid"}
+	ErrEmailInUse              = &CustomError{Code: "EMAIL_IN_USE", Message: "Email is already in use"}
+	ErrUserNotFound            = &CustomError{Code: "USER_NOT_FOUND", Message: "User not found"}
+	ErrInvalidCredentials      = &CustomError{Code: "INVALID_CREDENTIALS", Message: "Invalid credentials"}
+	ErrInternal                = &CustomError{Code: "INTERNAL_SERVER_ERROR", Message: "Internal server error"}
+	ErrSendingEmail            = &CustomError{Code: "ERROR_SENDING_EMAIL", Message: "Error in sending email"}
+	ErrInvalidVerificationCode = &CustomError{Code: "INVALID_VERIFICATION_CODE", Message: "Verification code is invalid"}
+	ErrBadRequest              = &CustomError{Code: "BAD_REQUEST", Message: "Request body is invalid"}
+	ErrUnauthorized            = &CustomError{Code: "UNAUTHORIZED", Message: "ACCESS Token is unauthorized"}
 )
