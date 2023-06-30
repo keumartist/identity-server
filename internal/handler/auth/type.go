@@ -10,6 +10,10 @@ type SignInWithEmailRequest struct {
 	Password string `json:"password"`
 }
 
+type SignInWithGoogleRequest struct {
+	Code string `json:"code"`
+}
+
 type Tokens struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`

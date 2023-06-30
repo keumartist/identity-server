@@ -15,3 +15,7 @@ type SignInInput struct {
 	Email    string
 	Password string
 }
+
+type SignInWithGoogleInput struct {
+	Code string
+}

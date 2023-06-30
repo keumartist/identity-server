@@ -31,15 +31,13 @@ func (h *AuthHandlerImpl) SignUpWithEmail(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).SendString(errors.ErrInternal.Error())
 	}
 
-	tokens, err := h.authService.SignUpWithEmail(service.SignUpInput{Email: requestBody.Email, Password: requestBody.Password})
+	message, err := h.authService.SignUpWithEmail(service.SignUpInput{Email: requestBody.Email, Password: requestBody.Password})
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).SendString(err.Error())
 	}
 
 	return c.JSON(fiber.Map{
-		"accessToken":  tokens.AccessToken,
-		"refreshToken": tokens.RefreshToken,
-		"idToken":      tokens.IdToken,
+		"message": message,
 	})
 }
 
@@ -51,6 +49,25 @@ func (h *AuthHandlerImpl) SignInWithEmail(c *fiber.Ctx) error {
 	}
 
 	tokens, err := h.authService.SignInWithEmail(service.SignInInput{Email: requestBody.Email, Password: requestBody.Password})
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).SendString(err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"accessToken":  tokens.AccessToken,
+		"refreshToken": tokens.RefreshToken,
+		"idToken":      tokens.IdToken,
+	})
+}
+
+func (h *AuthHandlerImpl) SignInWithGoogle(c *fiber.Ctx) error {
+	var requestBody SignInWithGoogleRequest
+
+	if err := c.BodyParser(&requestBody); err != nil {
+		return c.Status(http.StatusBadRequest).SendString(err.Error())
+	}
+
+	tokens, err := h.authService.SignInWithGoogle(service.SignInWithGoogleInput{Code: requestBody.Code})
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).SendString(err.Error())
 	}

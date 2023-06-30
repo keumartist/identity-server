@@ -29,3 +29,7 @@ func (sc *SocialConnection) Connect(user *User, provider *SocialProvider) error 
 	user.SocialConnections = append(user.SocialConnections, *sc)
 	return nil
 }
+
+const (
+	GoogleProviderID = 0
+)

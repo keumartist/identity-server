@@ -6,28 +6,12 @@ import (
 
 	"art-sso/internal/domain/user"
 	customerror "art-sso/internal/error"
-	repository "art-sso/internal/repository/user"
-	mailservice "art-sso/internal/service/mail"
 	tokenservice "art-sso/internal/service/token"
 	hash "art-sso/internal/service/util"
 	"errors"
 
 	"gorm.io/gorm"
 )
-
-type AuthServiceImpl struct {
-	userRepo     repository.UserRepository
-	tokenService tokenservice.TokenService
-	mailService  mailservice.MailService
-}
-
-func NewAuthService(userRepo repository.UserRepository, tokenService tokenservice.TokenService, mailService mailservice.MailService) AuthService {
-	return &AuthServiceImpl{
-		userRepo:     userRepo,
-		tokenService: tokenService,
-		mailService:  mailService,
-	}
-}
 
 func (s *AuthServiceImpl) SignUpWithEmail(input SignUpInput) (string, error) {
 	existingUser, err := s.userRepo.GetUserByEmail(input.Email)

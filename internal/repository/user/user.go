@@ -18,6 +18,9 @@ func NewMySQLUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (r *MySQLUserRepository) CreateUser(user *userdomain.User) error {
+	normalRole := userdomain.Role{Name: userdomain.RoleNormal}
+	user.Roles = append(user.Roles, normalRole)
+
 	result := r.db.Create(user)
 	if result.Error != nil {
 		return result.Error
