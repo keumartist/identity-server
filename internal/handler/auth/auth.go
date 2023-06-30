@@ -3,8 +3,9 @@ package auth
 import (
 	"net/http"
 
-	errors "art-sso/internal/error"
+	customerror "art-sso/internal/error"
 	service "art-sso/internal/service/auth"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -22,17 +23,21 @@ func NewAuthHandler(authService service.AuthService) *AuthHandlerImpl {
 func (h *AuthHandlerImpl) RegisterRoutes(app *fiber.App) {
 	app.Post("/signup", h.SignUpWithEmail)
 	app.Post("/signin", h.SignInWithEmail)
+	app.Post("/verification", h.VerifyEmail)
 }
 
 func (h *AuthHandlerImpl) SignUpWithEmail(c *fiber.Ctx) error {
 	var requestBody SignUpWithEmailRequest
 
 	if err := c.BodyParser(&requestBody); err != nil {
-		return c.Status(http.StatusInternalServerError).SendString(errors.ErrInternal.Error())
+		return c.Status(http.StatusInternalServerError).SendString(customerror.ErrInternal.Error())
 	}
 
 	message, err := h.authService.SignUpWithEmail(service.SignUpInput{Email: requestBody.Email, Password: requestBody.Password})
 	if err != nil {
+		if errors.Is(err, customerror.ErrEmailInUse) {
+			return c.Status(http.StatusBadRequest).SendString(err.Error())
+		}
 		return c.Status(http.StatusInternalServerError).SendString(err.Error())
 	}
 
@@ -77,4 +82,22 @@ func (h *AuthHandlerImpl) SignInWithGoogle(c *fiber.Ctx) error {
 		"refreshToken": tokens.RefreshToken,
 		"idToken":      tokens.IdToken,
 	})
+}
+
+func (h *AuthHandlerImpl) VerifyEmail(c *fiber.Ctx) error {
+	var requestBody VerifyEmailRequest
+
+	if err := c.BodyParser(&requestBody); err != nil {
+		return c.Status(http.StatusBadRequest).SendString(err.Error())
+	}
+
+	err := h.authService.VerifyEmailCode(service.VerifyEmailCodeInput{Email: requestBody.Email, Code: requestBody.Code})
+	if err != nil {
+		if errors.Is(err, customerror.ErrInvalidVerificationCode) {
+			return c.Status(http.StatusBadRequest).SendString(err.Error())
+		}
+		return c.Status(http.StatusInternalServerError).SendString(err.Error())
+	}
+
+	return c.Status(http.StatusNoContent).SendString("")
 }

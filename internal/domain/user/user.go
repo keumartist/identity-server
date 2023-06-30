@@ -3,21 +3,23 @@ package user
 import (
 	"errors"
 	"strconv"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 type User struct {
 	gorm.Model
-	ID                uint   `gorm:"primaryKey"`
-	Email             string `gorm:"type:varchar(256);unique"`
-	Name              string
-	Password          string
-	RefreshToken      string
-	VerificationCode  *string
-	EmailVerified     bool               `gorm:"default:false"`
-	SocialConnections []SocialConnection `gorm:"foreignkey:UserID"`
-	Roles             []Role             `gorm:"foreignkey:UserID"`
+	ID                   uint   `gorm:"primaryKey"`
+	Email                string `gorm:"type:varchar(256);unique"`
+	Name                 string
+	Password             string
+	RefreshToken         string
+	VerificationCode     *string
+	VerificationExpireAt *time.Time
+	EmailVerified        bool               `gorm:"default:false"`
+	SocialConnections    []SocialConnection `gorm:"foreignkey:UserID"`
+	Roles                []Role             `gorm:"foreignkey:UserID"`
 }
 
 func (u *User) ChangePassword(oldPassword, newPassword string) error {

@@ -3,6 +3,7 @@ package user
 import (
 	userdomain "art-sso/internal/domain/user"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -87,8 +88,9 @@ func (r *MySQLUserRepository) DeleteUser(user *userdomain.User) error {
 	return nil
 }
 
-func (r *MySQLUserRepository) CreateUnverifiedUser(user *userdomain.User, verificationCode string) error {
+func (r *MySQLUserRepository) CreateUnverifiedUser(user *userdomain.User, verificationCode string, expireAt time.Time) error {
 	user.VerificationCode = &verificationCode
+	user.VerificationExpireAt = &expireAt
 	user.EmailVerified = false
 
 	normalRole := userdomain.Role{Name: userdomain.RoleNormal}
@@ -102,13 +104,15 @@ func (r *MySQLUserRepository) CreateUnverifiedUser(user *userdomain.User, verifi
 	return nil
 }
 
-func (r *MySQLUserRepository) UpdateVerificationCode(user *userdomain.User, verificationCode string) error {
+func (r *MySQLUserRepository) UpdateVerificationCode(user *userdomain.User, verificationCode string, expireAt time.Time) error {
 	user.VerificationCode = &verificationCode
+	user.VerificationExpireAt = &expireAt
 	user.EmailVerified = false
 
 	result := r.db.Model(user).Updates(map[string]interface{}{
-		"verification_code": user.VerificationCode,
-		"email_verified":    user.EmailVerified,
+		"verification_code":           user.VerificationCode,
+		"email_verified":              user.EmailVerified,
+		"verification_code_expire_at": user.VerificationExpireAt,
 	})
 
 	if result.Error != nil {

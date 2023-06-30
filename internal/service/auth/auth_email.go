@@ -3,6 +3,7 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"time"
 
 	"art-sso/internal/domain/user"
 	customerror "art-sso/internal/error"
@@ -55,8 +56,9 @@ func (s *AuthServiceImpl) updateExistingUser(existingUser *user.User) (string, e
 		return "", customerror.ErrEmailInUse
 	}
 
-	verificationCode := generateVerificationCode()
-	err := s.userRepo.UpdateVerificationCode(existingUser, verificationCode)
+	verificationCode, expireAt := generateVerificationCodeWithExpireTime(180)
+
+	err := s.userRepo.UpdateVerificationCode(existingUser, verificationCode, expireAt)
 	if err != nil {
 		return "", customerror.ErrInternal
 	}
@@ -69,8 +71,25 @@ func (s *AuthServiceImpl) updateExistingUser(existingUser *user.User) (string, e
 	return "Verification code was sent to user email", nil
 }
 
+func (s *AuthServiceImpl) VerifyEmailCode(input VerifyEmailCodeInput) error {
+	user, err := s.userRepo.GetUserByEmail(input.Email)
+	if err != nil {
+		return customerror.ErrUserNotFound
+	}
+
+	if user.VerificationCode != &input.Code {
+		return customerror.ErrInvalidVerificationCode
+	}
+
+	if time.Now().After(*user.VerificationExpireAt) {
+		return customerror.ErrInvalidVerificationCode
+	}
+
+	return nil
+}
+
 func (s *AuthServiceImpl) createNewUser(email, password string) (string, error) {
-	verificationCode := generateVerificationCode()
+	verificationCode, expireAt := generateVerificationCodeWithExpireTime(180)
 
 	hashedPassword, err := hash.HashPassword(password)
 	if err != nil {
@@ -82,7 +101,7 @@ func (s *AuthServiceImpl) createNewUser(email, password string) (string, error) 
 		Password: hashedPassword,
 	}
 
-	err = s.userRepo.CreateUnverifiedUser(newUser, verificationCode)
+	err = s.userRepo.CreateUnverifiedUser(newUser, verificationCode, expireAt)
 	if err != nil {
 		return "", customerror.ErrInternal
 	}
@@ -106,7 +125,7 @@ func (s *AuthServiceImpl) generateTokens(user *user.User) (string, string, strin
 		return "", "", "", err
 	}
 
-	refreshToken, err := s.tokenService.GenerateToken(tokenservice.GenerateTokenInput{user.IDAsString(), user.Email, 60 * 60 * 24 * 7, tokenservice.RefreshToken})
+	refreshToken, err := s.tokenService.GenerateToken(tokenservice.GenerateTokenInput{Id: user.IDAsString(), Email: user.Email, ExpirationInSeconds: 60 * 60 * 24 * 7, TokenType: tokenservice.RefreshToken})
 	if err != nil {
 		return "", "", "", err
 	}
@@ -114,8 +133,10 @@ func (s *AuthServiceImpl) generateTokens(user *user.User) (string, string, strin
 	return idToken, accessToken, refreshToken, nil
 }
 
-func generateVerificationCode() string {
+func generateVerificationCodeWithExpireTime(timeInMills uint) (string, time.Time) {
 	bytes := make([]byte, 3)
 	rand.Read(bytes)
-	return hex.EncodeToString(bytes)
+	expireAt := time.Now().Add(time.Duration(timeInMills) * time.Second)
+
+	return hex.EncodeToString(bytes), expireAt
 }
