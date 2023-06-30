@@ -12,7 +12,8 @@ type UserRepository interface {
 	UpdateUser(user *domain.User) error
 	UpdateUserProfile(user *domain.User) error
 	UpdateVerificationCode(user *domain.User, verificationCode string, expireAt time.Time) error
+	UpdateRefreshToken(user *domain.User, refreshToken string) error
 	DeleteUser(user *domain.User) error
 	CreateUnverifiedUser(user *domain.User, verificationCode string, expireAt time.Time) error
-	VerifyUser(email, verificationCode string) error
+	VerifyUserEmail(user *domain.User) error
 }

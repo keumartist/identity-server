@@ -2,6 +2,7 @@ package mocks
 
 import (
 	domain "art-sso/internal/domain/user"
+	"time"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -25,8 +26,8 @@ func (m *MockUserRepository) GetUserByEmail(email string) (*domain.User, error) 
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
-func (m *MockUserRepository) CreateUnverifiedUser(user *domain.User, verificationCode string) error {
-	args := m.Called(user, verificationCode)
+func (m *MockUserRepository) CreateUnverifiedUser(user *domain.User, verificationCode string, expireAt time.Time) error {
+	args := m.Called(user, verificationCode, expireAt)
 	return args.Error(0)
 }
 
@@ -40,8 +41,13 @@ func (m *MockUserRepository) UpdateUserProfile(user *domain.User) error {
 	return args.Error(0)
 }
 
-func (m *MockUserRepository) UpdateVerificationCode(user *domain.User, verificationCode string) error {
-	args := m.Called(user, verificationCode)
+func (m *MockUserRepository) UpdateRefreshToken(user *domain.User, refreshToken string) error {
+	args := m.Called(user)
+	return args.Error(0)
+}
+
+func (m *MockUserRepository) UpdateVerificationCode(user *domain.User, verificationCode string, expireAt time.Time) error {
+	args := m.Called(user, verificationCode, expireAt)
 	return args.Error(0)
 }
 
@@ -50,7 +56,7 @@ func (m *MockUserRepository) DeleteUser(user *domain.User) error {
 	return args.Error(0)
 }
 
-func (m *MockUserRepository) VerifyUser(email, verificationCode string) error {
-	args := m.Called(email, verificationCode)
+func (m *MockUserRepository) VerifyUserEmail(user *domain.User) error {
+	args := m.Called(user)
 	return args.Error(0)
 }

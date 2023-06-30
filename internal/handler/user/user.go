@@ -3,7 +3,10 @@ package user
 import (
 	"net/http"
 
+	tokenservice "art-sso/internal/service/token"
 	userservice "art-sso/internal/service/user"
+
+	middleware "art-sso/internal/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,9 +21,11 @@ func NewUserHandler(service userservice.UserService) *UserHandlerImpl {
 	}
 }
 
-func (h *UserHandlerImpl) RegisterRoutes(app *fiber.App) {
+func (h *UserHandlerImpl) RegisterRoutes(app *fiber.App, tokenService tokenservice.TokenService) {
+	app.Use("/users/:id", middleware.TokenValidationMiddleware(tokenService))
+
 	app.Post("/users", h.CreateUser)
-	app.Get("/users/:id", h.GetUserByID)
+	app.Get("/users/me", h.GetMe)
 	app.Get("/users", h.GetUsers)
 	app.Put("/users/:id", h.UpdateUser)
 	app.Delete("/users/:id", h.DeleteUser)
@@ -41,9 +46,13 @@ func (h *UserHandlerImpl) CreateUser(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).JSON(createdUser)
 }
 
-func (h *UserHandlerImpl) GetUserByID(c *fiber.Ctx) error {
-	id := c.Params("id")
-	input := userservice.GetUserByIDInput{ID: id}
+func (h *UserHandlerImpl) GetMe(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userId").(string)
+	if !ok {
+		return c.Status(http.StatusUnauthorized).SendString("Not authorized")
+	}
+
+	input := userservice.GetUserByIDInput{ID: userId}
 
 	user, err := h.service.GetUserByID(input)
 	if err != nil {

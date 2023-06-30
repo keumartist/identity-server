@@ -44,6 +44,11 @@ func (s *AuthServiceImpl) SignInWithEmail(input SignInInput) (Tokens, error) {
 		return tokens, customerror.ErrInternal
 	}
 
+	err = s.userRepo.UpdateRefreshToken(user, refreshToken)
+	if err != nil {
+		return tokens, customerror.ErrInternal
+	}
+
 	tokens.IdToken = idToken
 	tokens.AccessToken = accessToken
 	tokens.RefreshToken = refreshToken
@@ -85,7 +90,7 @@ func (s *AuthServiceImpl) VerifyEmailCode(input VerifyEmailCodeInput) error {
 		return customerror.ErrInvalidVerificationCode
 	}
 
-	err = s.userRepo.VerifyUser(input.Email, input.Code)
+	err = s.userRepo.VerifyUserEmail(user)
 	if err != nil {
 		return customerror.ErrInvalidVerificationCode
 	}

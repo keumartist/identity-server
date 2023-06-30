@@ -16,6 +16,5 @@ type SocialConnection struct {
 }
 
 type Role struct {
-	Name   string
-	UserID uint
+	Name string
 }

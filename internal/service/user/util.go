@@ -19,8 +19,7 @@ func UserDomainToDto(user *domain.User) dto.User {
 	var roles []dto.Role
 	for _, role := range user.Roles {
 		roles = append(roles, dto.Role{
-			Name:   string(role.Name),
-			UserID: role.UserID,
+			Name: string(role.Name),
 		})
 	}
 

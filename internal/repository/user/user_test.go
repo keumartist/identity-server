@@ -2,6 +2,7 @@ package user
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
@@ -17,7 +18,7 @@ func TestMySQLUserRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = db.AutoMigrate(&domain.User{})
+	err = db.AutoMigrate(&domain.User{}, &domain.Role{}, &domain.SocialConnection{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,11 +87,16 @@ func TestMySQLUserRepository(t *testing.T) {
 	})
 
 	t.Run("Create unverified user", func(t *testing.T) {
+		db.Exec("DELETE FROM users")
+		db.Exec("DELETE FROM roles")
+
 		verificationCode := "123456"
+		expireAt := time.Now().Add(time.Duration(180) * time.Second)
 		user := domain.User{
 			Email: "unverified@example.com",
 		}
-		err := userRepo.CreateUnverifiedUser(&user, verificationCode)
+
+		err := userRepo.CreateUnverifiedUser(&user, verificationCode, expireAt)
 
 		assert.NoError(t, err)
 
@@ -101,11 +107,16 @@ func TestMySQLUserRepository(t *testing.T) {
 		assert.Equal(t, verificationCode, *createdUser.VerificationCode)
 	})
 
-	t.Run("Verify user", func(t *testing.T) {
-		verificationCode := "123456"
-		email := "unverified@example.com"
+	t.Run("Verify user email", func(t *testing.T) {
+		db.Exec("DELETE FROM users")
+		db.Exec("DELETE FROM roles")
 
-		err := userRepo.VerifyUser(email, verificationCode)
+		email := "unverified@example.com"
+		user := domain.User{
+			Email: email,
+		}
+
+		err := userRepo.VerifyUserEmail(&user)
 
 		assert.NoError(t, err)
 
@@ -114,7 +125,6 @@ func TestMySQLUserRepository(t *testing.T) {
 		assert.NotNil(t, verifiedUser)
 		assert.True(t, verifiedUser.EmailVerified)
 
-		// Check that verification code is cleared after verification
 		assert.Equal(t, "", *verifiedUser.VerificationCode)
 	})
 }

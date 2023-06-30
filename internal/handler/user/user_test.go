@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	dto "art-sso/internal/dto/user"
-	mock "art-sso/internal/handler/user/mocks"
+	mocks "art-sso/internal/handler/user/mocks"
 	userservice "art-sso/internal/service/user"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,11 +15,12 @@ import (
 )
 
 func TestUserHandler(t *testing.T) {
-	mockUserService := new(mock.MockUserService)
+	mockUserService := new(mocks.MockUserService)
+	mockTokenService := new(mocks.MockTokenService)
 	userHandler := NewUserHandler(mockUserService)
 
 	app := fiber.New()
-	userHandler.RegisterRoutes(app)
+	userHandler.RegisterRoutes(app, mockTokenService)
 
 	t.Run("Create user", func(t *testing.T) {
 		email := "test@example.com"

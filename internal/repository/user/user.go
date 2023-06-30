@@ -31,7 +31,7 @@ func (r *MySQLUserRepository) CreateUser(user *userdomain.User) error {
 
 func (r *MySQLUserRepository) GetUserByID(id string) (*userdomain.User, error) {
 	var user userdomain.User
-	result := r.db.First(&user, id)
+	result := r.db.Preload("Roles").Preload("SocialConnections").First(&user, id)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -121,28 +121,31 @@ func (r *MySQLUserRepository) UpdateVerificationCode(user *userdomain.User, veri
 
 	return nil
 }
+func (r *MySQLUserRepository) UpdateRefreshToken(user *userdomain.User, refreshToken string) error {
+	user.RefreshToken = refreshToken
 
-func (r *MySQLUserRepository) VerifyUser(email, verificationCode string) error {
-	var user userdomain.User
-	result := r.db.Where("email = ? AND verification_code = ?", email, verificationCode).First(&user)
+	result := r.db.Model(user).Updates(map[string]interface{}{
+		"refresh_token": refreshToken,
+	})
 
 	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return errors.New("Invalid email or verification code")
-		} else {
-			return result.Error
-		}
+		return result.Error
 	}
 
-	user.EmailVerified = true
+	return nil
+}
 
+func (r *MySQLUserRepository) VerifyUserEmail(user *userdomain.User) error {
+	user.EmailVerified = true
 	empty := ""
 	user.VerificationCode = &empty
+	user.VerificationCodeExpireAt = nil
 
-	updateResult := r.db.Save(&user)
-	if updateResult.Error != nil {
-		return updateResult.Error
+	result := r.db.Save(user)
+	if result.Error != nil {
+		return result.Error
 	}
+
 	return nil
 }
 

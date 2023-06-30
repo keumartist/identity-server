@@ -32,7 +32,7 @@ func TestAuthService(t *testing.T) {
 		}
 
 		mockUserRepo.On("GetUserByEmail", email).Return(&user.User{}, errors.New("user not found"))
-		mockUserRepo.On("CreateUnverifiedUser", mock.Anything, mock.Anything).Return(nil)
+		mockUserRepo.On("CreateUnverifiedUser", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		mockMailService.On("SendVerificationEmail", email, mock.Anything).Return(nil)
 
 		_, err := authService.SignUpWithEmail(signUpInput)
@@ -53,7 +53,7 @@ func TestAuthService(t *testing.T) {
 		existingUser := &user.User{Email: email, EmailVerified: false}
 
 		mockUserRepo.On("GetUserByEmail", email).Return(existingUser, nil)
-		mockUserRepo.On("UpdateVerificationCode", mock.Anything, mock.Anything).Return(nil)
+		mockUserRepo.On("UpdateVerificationCode", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		mockMailService.On("SendVerificationEmail", email, mock.Anything).Return(nil)
 
 		_, err := authService.SignUpWithEmail(signUpInput)
@@ -74,6 +74,7 @@ func TestAuthService(t *testing.T) {
 		hashedPassword, _ := hash.HashPassword(password)
 
 		mockUserRepo.On("GetUserByEmail", email).Return(&user.User{Email: email, EmailVerified: true, Password: hashedPassword}, nil)
+		mockUserRepo.On("UpdateRefreshToken", mock.Anything, mock.Anything).Return(nil)
 
 		mockTokenService.On("GenerateToken", mock.Anything).Return("idToken", nil)
 

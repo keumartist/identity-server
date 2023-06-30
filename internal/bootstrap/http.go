@@ -49,7 +49,7 @@ func InitHTTPServer() error {
 	authHandler := authhandler.NewAuthHandler(authService)
 
 	app := fiber.New()
-	userHandler.RegisterRoutes(app)
+	userHandler.RegisterRoutes(app, tokenService)
 	authHandler.RegisterRoutes(app)
 
 	log.Fatal(app.Listen(":3000"))
