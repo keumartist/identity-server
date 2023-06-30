@@ -90,7 +90,7 @@ func (r *MySQLUserRepository) DeleteUser(user *userdomain.User) error {
 
 func (r *MySQLUserRepository) CreateUnverifiedUser(user *userdomain.User, verificationCode string, expireAt time.Time) error {
 	user.VerificationCode = &verificationCode
-	user.VerificationExpireAt = &expireAt
+	user.VerificationCodeExpireAt = &expireAt
 	user.EmailVerified = false
 
 	normalRole := userdomain.Role{Name: userdomain.RoleNormal}
@@ -106,13 +106,13 @@ func (r *MySQLUserRepository) CreateUnverifiedUser(user *userdomain.User, verifi
 
 func (r *MySQLUserRepository) UpdateVerificationCode(user *userdomain.User, verificationCode string, expireAt time.Time) error {
 	user.VerificationCode = &verificationCode
-	user.VerificationExpireAt = &expireAt
+	user.VerificationCodeExpireAt = &expireAt
 	user.EmailVerified = false
 
 	result := r.db.Model(user).Updates(map[string]interface{}{
 		"verification_code":           user.VerificationCode,
 		"email_verified":              user.EmailVerified,
-		"verification_code_expire_at": user.VerificationExpireAt,
+		"verification_code_expire_at": user.VerificationCodeExpireAt,
 	})
 
 	if result.Error != nil {

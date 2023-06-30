@@ -77,11 +77,16 @@ func (s *AuthServiceImpl) VerifyEmailCode(input VerifyEmailCodeInput) error {
 		return customerror.ErrUserNotFound
 	}
 
-	if user.VerificationCode != &input.Code {
+	if *user.VerificationCode != input.Code {
 		return customerror.ErrInvalidVerificationCode
 	}
 
-	if time.Now().After(*user.VerificationExpireAt) {
+	if time.Now().After(*user.VerificationCodeExpireAt) {
+		return customerror.ErrInvalidVerificationCode
+	}
+
+	err = s.userRepo.VerifyUser(input.Email, input.Code)
+	if err != nil {
 		return customerror.ErrInvalidVerificationCode
 	}
 
