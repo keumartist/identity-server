@@ -5,6 +5,7 @@ import (
 	authhandler "art-sso/internal/handler/auth/grpc"
 	tokenservice "art-sso/internal/service/token"
 	"fmt"
+	"log"
 	"net"
 
 	"google.golang.org/grpc"
@@ -28,6 +29,8 @@ func InitGRPCServer() error {
 	if err != nil {
 		return fmt.Errorf("Failed to listen: %v", err)
 	}
+
+	log.Println("Server listening on port 50051")
 
 	grpcServer := grpc.NewServer()
 	api.RegisterAuthServiceServer(grpcServer, grpcHandler)
