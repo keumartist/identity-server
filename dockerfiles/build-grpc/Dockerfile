@@ -9,7 +9,8 @@ RUN go mod download
 COPY . .
 
 ARG SERVICE_TYPE=GRPC
-RUN go build -tags $SERVICE_TYPE -o /identity-server ./cmd/server/main/grpc.go
+# 정적 바이너리 생성을 위해 CGO_ENABLED=0 설정
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -tags $SERVICE_TYPE -o /identity-server ./cmd/server/main/grpc.go
 
 FROM scratch
 COPY --from=builder /identity-server /identity-server
