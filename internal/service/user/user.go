@@ -81,7 +81,7 @@ func (s *UserServiceImpl) UpdateUserProfile(input UpdateUserProfileInput) error 
 func (s *UserServiceImpl) DeleteUser(input DeleteUserInput) error {
 	id, err := strconv.ParseUint(input.ID, 10, 32)
 	if err != nil {
-		return err
+		return customerror.ErrBadRequest
 	}
 
 	user := &domain.User{

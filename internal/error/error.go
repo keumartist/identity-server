@@ -18,6 +18,6 @@ var (
 	ErrInternal                = &CustomError{Code: "INTERNAL_SERVER_ERROR", Message: "Internal server error"}
 	ErrSendingEmail            = &CustomError{Code: "ERROR_SENDING_EMAIL", Message: "Error in sending email"}
 	ErrInvalidVerificationCode = &CustomError{Code: "INVALID_VERIFICATION_CODE", Message: "Verification code is invalid"}
-	ErrBadRequest              = &CustomError{Code: "BAD_REQUEST", Message: "Request body is invalid"}
+	ErrBadRequest              = &CustomError{Code: "BAD_REQUEST", Message: "Request is invalid"}
 	ErrUnauthorized            = &CustomError{Code: "UNAUTHORIZED", Message: "ACCESS Token is unauthorized"}
 )

@@ -2,6 +2,7 @@ package user
 
 import (
 	dto "art-sso/internal/dto/user"
+	customerror "art-sso/internal/error"
 	mocks "art-sso/internal/handler/user/mocks"
 	tokenservice "art-sso/internal/service/token"
 	userservice "art-sso/internal/service/user"
@@ -88,5 +89,45 @@ func TestUserHandler(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+
+	t.Run("Get my profile - failed with invalid token", func(t *testing.T) {
+		testToken := "invalid-test-token"
+
+		mockTokenService.On("VerifyToken", tokenservice.VerifyTokenInput{Token: testToken, TokenType: tokenservice.AccessToken}).Return(false, "", "", nil)
+
+		req, _ := http.NewRequest("GET", "/users/me", nil)
+		req.Header.Set("Authorization", "Bearer "+testToken)
+		resp, err := app.Test(req, -1)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	})
+
+	t.Run("Get users by email - email does not exist", func(t *testing.T) {
+		email := "nonexistent@example.com"
+
+		input := userservice.GetUserByEmailInput{Email: email}
+		mockUserService.On("GetUserByEmail", input).Return(dto.User{}, customerror.ErrUserNotFound)
+
+		req, _ := http.NewRequest("GET", "/users?email="+email, nil)
+		resp, err := app.Test(req, -1)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	})
+
+	t.Run("Update user profile - invalid request body", func(t *testing.T) {
+		testToken := "test-token"
+
+		invalidBody := ""
+		req, _ := http.NewRequest("PUT", "/users/me", bytes.NewBuffer([]byte(invalidBody)))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+testToken)
+
+		resp, err := app.Test(req, -1)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 }
