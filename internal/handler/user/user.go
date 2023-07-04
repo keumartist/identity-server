@@ -1,8 +1,10 @@
 package user
 
 import (
+	"errors"
 	"net/http"
 
+	customerror "art-sso/internal/error"
 	tokenservice "art-sso/internal/service/token"
 	userservice "art-sso/internal/service/user"
 
@@ -22,39 +24,26 @@ func NewUserHandler(service userservice.UserService) *UserHandlerImpl {
 }
 
 func (h *UserHandlerImpl) RegisterRoutes(app *fiber.App, tokenService tokenservice.TokenService) {
-	app.Post("/users", h.CreateUser)
 	app.Get("/users/me", middleware.TokenValidationMiddleware(tokenService), h.GetMe)
 	app.Get("/users", h.GetUsers)
-	app.Put("/users/:id", h.UpdateUser)
-	app.Delete("/users/:id", h.DeleteUser)
-}
-
-func (h *UserHandlerImpl) CreateUser(c *fiber.Ctx) error {
-	var requestBody CreateUserRequest
-	if err := c.BodyParser(&requestBody); err != nil {
-		return c.Status(http.StatusBadRequest).SendString(err.Error())
-	}
-
-	input := userservice.CreateUserInput{Email: requestBody.Email, Password: requestBody.Password}
-	createdUser, err := h.service.CreateUser(input)
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).SendString("User not found")
-	}
-
-	return c.Status(http.StatusCreated).JSON(createdUser)
+	app.Put("/users/me", middleware.TokenValidationMiddleware(tokenService), h.UpdateMeUserProfile)
+	app.Delete("/users/me", middleware.TokenValidationMiddleware(tokenService), h.DeleteMeUser)
 }
 
 func (h *UserHandlerImpl) GetMe(c *fiber.Ctx) error {
 	userId, ok := c.Locals("userId").(string)
 	if !ok {
-		return c.Status(http.StatusUnauthorized).SendString("Not authorized")
+		return c.Status(http.StatusUnauthorized).JSON(customerror.ErrUnauthorized)
 	}
 
 	input := userservice.GetUserByIDInput{ID: userId}
 
 	user, err := h.service.GetUserByID(input)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).SendString(err.Error())
+		if errors.Is(err, customerror.ErrUserNotFound) {
+			return c.Status(http.StatusBadRequest).JSON(customerror.ErrUserNotFound)
+		}
+		return c.Status(http.StatusInternalServerError).JSON(customerror.ErrInternal)
 	}
 
 	return c.JSON(user)
@@ -66,36 +55,52 @@ func (h *UserHandlerImpl) GetUsers(c *fiber.Ctx) error {
 
 	user, err := h.service.GetUserByEmail(input)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).SendString(err.Error())
+		if errors.Is(err, customerror.ErrUserNotFound) {
+			return c.Status(http.StatusBadRequest).JSON(customerror.ErrUserNotFound)
+		}
+		return c.Status(http.StatusInternalServerError).JSON(customerror.ErrInternal)
 	}
 
 	return c.JSON(user)
 }
 
-func (h *UserHandlerImpl) UpdateUser(c *fiber.Ctx) error {
-	var requestBody UpdateUserRequest
-	if err := c.BodyParser(&requestBody); err != nil {
-		return c.Status(http.StatusBadRequest).SendString(err.Error())
+func (h *UserHandlerImpl) UpdateMeUserProfile(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userId").(string)
+	if !ok {
+		return c.Status(http.StatusUnauthorized).JSON(customerror.ErrUnauthorized)
 	}
 
-	id := c.Params("id")
+	var requestBody UpdateUserProfileRequest
+	if err := c.BodyParser(&requestBody); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(customerror.ErrBadRequest)
+	}
 
-	input := userservice.UpdateUserProfileInput{ID: id, Email: &requestBody.Email, Name: &requestBody.Name}
+	input := userservice.UpdateUserProfileInput{ID: userId, Name: &requestBody.Name}
 	err := h.service.UpdateUserProfile(input)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).SendString(err.Error())
+		if errors.Is(err, customerror.ErrBadRequest) {
+			return c.Status(http.StatusBadRequest).JSON(customerror.ErrBadRequest)
+		}
+		return c.Status(http.StatusInternalServerError).JSON(customerror.ErrInternal)
 	}
 
 	return c.SendStatus(http.StatusOK)
 }
 
-func (h *UserHandlerImpl) DeleteUser(c *fiber.Ctx) error {
-	id := c.Params("id")
-	input := userservice.DeleteUserInput{ID: id}
+func (h *UserHandlerImpl) DeleteMeUser(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userId").(string)
+	if !ok {
+		return c.Status(http.StatusUnauthorized).SendString("Not authorized")
+	}
+
+	input := userservice.DeleteUserInput{ID: userId}
 
 	err := h.service.DeleteUser(input)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).SendString(err.Error())
+		if errors.Is(err, customerror.ErrBadRequest) {
+			return c.Status(http.StatusBadRequest).JSON(customerror.ErrBadRequest)
+		}
+		return c.Status(http.StatusInternalServerError).JSON(customerror.ErrInternal)
 	}
 
 	return c.SendStatus(http.StatusOK)
