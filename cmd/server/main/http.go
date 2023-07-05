@@ -11,6 +11,6 @@ func main() {
 	err := bootstrap.InitHTTPServer()
 
 	if err != nil {
-		log.Fatalf("Failed to initialize GRPC server: %v", err)
+		log.Fatalf("Failed to initialize HTTP server: %v", err)
 	}
 }

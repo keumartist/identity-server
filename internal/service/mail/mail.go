@@ -40,6 +40,7 @@ func (s *MailServiceImpl) sendWithSES(email, verificationCode string) error {
 	recipient := email
 	subject := "Email verification code from artsso"
 	htmlBody := fmt.Sprintf("<h1>Verification code</h1><p>%s</p>", verificationCode)
+	textBody := ""
 	charSet := "UTF-8"
 
 	input := &ses.SendEmailInput{

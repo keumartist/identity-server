@@ -19,7 +19,7 @@ import (
 )
 
 func InitHTTPServer() error {
-	connStr := os.Getenv("DATABASE_CONNECTION_STRING")
+	connStr := os.Getenv("MYSQL_CONNECTION_STRING")
 	if connStr == "" {
 		log.Fatal("Database connection is not set")
 	}
