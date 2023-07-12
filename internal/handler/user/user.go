@@ -17,7 +17,7 @@ type UserHandlerImpl struct {
 	service userservice.UserService
 }
 
-func NewUserHandler(service userservice.UserService) *UserHandlerImpl {
+func NewUserHandler(service userservice.UserService) UserHandler {
 	return &UserHandlerImpl{
 		service: service,
 	}
