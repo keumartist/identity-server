@@ -22,3 +22,7 @@ type GetUserByEmailInput struct {
 type DeleteUserInput struct {
 	ID string
 }
+
+type RefreshAccessTokenInput struct {
+	Token string
+}

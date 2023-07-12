@@ -19,3 +19,8 @@ type VerifyTokenInput struct {
 	Token     string
 	TokenType TokenType
 }
+
+type GetUserIDFromTokenInput struct {
+	Token     string
+	TokenType TokenType
+}

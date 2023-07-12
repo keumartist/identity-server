@@ -21,9 +21,10 @@ func NewAuthHandler(authService service.AuthService) AuthHandler {
 }
 
 func (h *AuthHandlerImpl) RegisterRoutes(app *fiber.App) {
-	app.Post("/api/v1/signup", h.SignUpWithEmail)
-	app.Post("/api/v1/signin", h.SignInWithEmail)
-	app.Post("/api/v1/verification", h.VerifyEmail)
+	app.Post("/api/v1/auth/signup", h.SignUpWithEmail)
+	app.Post("/api/v1/auth/signin", h.SignInWithEmail)
+	app.Post("/api/v1/auth/verification", h.VerifyEmail)
+	app.Post("/api/v1/auth/refresh", h.RefreshAccessToken)
 }
 
 func (h *AuthHandlerImpl) SignUpWithEmail(c *fiber.Ctx) error {
@@ -103,4 +104,25 @@ func (h *AuthHandlerImpl) VerifyEmail(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusNoContent).SendString("")
+}
+
+func (h *AuthHandlerImpl) RefreshAccessToken(c *fiber.Ctx) error {
+	var requestBody RefreshAccessTokenRequest
+
+	if err := c.BodyParser(&requestBody); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(customerror.ErrBadRequest)
+	}
+
+	tokens, err := h.authService.RefreshAccessToken(service.RefreshAccessTokenInput{Token: requestBody.Token})
+
+	if err != nil {
+		if errors.Is(err, customerror.ErrUnauthorized) {
+			return c.Status(http.StatusUnauthorized).JSON(customerror.ErrUnauthorized)
+		}
+		return c.Status(http.StatusInternalServerError).JSON(customerror.ErrInternal)
+	}
+
+	return c.JSON(fiber.Map{
+		"accessToken": tokens.AccessToken,
+	})
 }

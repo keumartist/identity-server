@@ -84,3 +84,13 @@ func (s *TokenServiceImpl) signToken(method jwt.SigningMethod, claims jwt.Claims
 
 	return token.SignedString([]byte(s.secretKey))
 }
+
+func (s *TokenServiceImpl) GetUserIDFromToken(input GetUserIDFromTokenInput) (string, error) {
+	_, sub, _, err := s.VerifyToken(VerifyTokenInput{Token: input.Token, TokenType: input.TokenType})
+
+	if err != nil {
+		return "", errors.New("Invalid token")
+	}
+
+	return sub, nil
+}

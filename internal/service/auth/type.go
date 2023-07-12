@@ -24,3 +24,7 @@ type VerifyEmailCodeInput struct {
 	Code  string
 	Email string
 }
+
+type RefreshAccessTokenInput struct {
+	Token string
+}

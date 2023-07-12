@@ -8,4 +8,5 @@ type AuthHandler interface {
 	RegisterRoutes(app *fiber.App)
 	SignUpWithEmail(c *fiber.Ctx) error
 	SignInWithEmail(c *fiber.Ctx) error
+	RefreshAccessToken(c *fiber.Ctx) error
 }
