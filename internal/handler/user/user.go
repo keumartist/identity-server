@@ -24,10 +24,10 @@ func NewUserHandler(service userservice.UserService) UserHandler {
 }
 
 func (h *UserHandlerImpl) RegisterRoutes(app *fiber.App, tokenService tokenservice.TokenService) {
-	app.Get("/users/me", middleware.TokenValidationMiddleware(tokenService), h.GetMe)
-	app.Get("/users", h.GetUsers)
-	app.Put("/users/me", middleware.TokenValidationMiddleware(tokenService), h.UpdateMeUserProfile)
-	app.Delete("/users/me", middleware.TokenValidationMiddleware(tokenService), h.DeleteMeUser)
+	app.Get("/api/v1/users/me", middleware.TokenValidationMiddleware(tokenService), h.GetMe)
+	app.Get("/api/v1/users", h.GetUsers)
+	app.Put("/api/v1/users/me", middleware.TokenValidationMiddleware(tokenService), h.UpdateMeUserProfile)
+	app.Delete("/api/v1/users/me", middleware.TokenValidationMiddleware(tokenService), h.DeleteMeUser)
 }
 
 func (h *UserHandlerImpl) GetMe(c *fiber.Ctx) error {

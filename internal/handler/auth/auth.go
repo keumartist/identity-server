@@ -21,9 +21,9 @@ func NewAuthHandler(authService service.AuthService) AuthHandler {
 }
 
 func (h *AuthHandlerImpl) RegisterRoutes(app *fiber.App) {
-	app.Post("/signup", h.SignUpWithEmail)
-	app.Post("/signin", h.SignInWithEmail)
-	app.Post("/verification", h.VerifyEmail)
+	app.Post("/api/v1/signup", h.SignUpWithEmail)
+	app.Post("/api/v1/signin", h.SignInWithEmail)
+	app.Post("/api/v1/verification", h.VerifyEmail)
 }
 
 func (h *AuthHandlerImpl) SignUpWithEmail(c *fiber.Ctx) error {
