@@ -9,11 +9,13 @@ RUN go mod download
 COPY . .
 
 ARG SERVICE_TYPE=HTTP
-# 정적 바이너리 생성을 위해 CGO_ENABLED=0 설정
+
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -tags $SERVICE_TYPE -o /identity-server ./cmd/server/main/http.go
 
-FROM scratch
+FROM alpine:latest
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /identity-server /identity-server
 
-EXPOSE 8080
-CMD [ "/identity-server" ]
+EXPOSE 3000
+CMD ["/identity-server"]
