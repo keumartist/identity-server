@@ -33,7 +33,7 @@ func TestSignUpWithEmail(t *testing.T) {
 			Password: "password",
 		}).Return("Verification code was sent to email", nil)
 
-		req, _ := http.NewRequest("POST", "/signup", strings.NewReader(`{"email":"test@example.com", "password":"password"}`))
+		req, _ := http.NewRequest("POST", "/api/v1/auth/signup", strings.NewReader(`{"email":"test@example.com", "password":"password"}`))
 		req.Header.Set("Content-Type", "application/json")
 		resp, err := app.Test(req)
 
@@ -49,7 +49,7 @@ func TestSignUpWithEmail(t *testing.T) {
 			Password: "password",
 		}).Return("", customerror.ErrEmailInUse)
 
-		req, _ := http.NewRequest("POST", "/signup", strings.NewReader(`{"email":"test@example.com", "password":"password"}`))
+		req, _ := http.NewRequest("POST", "/api/v1/auth/signup", strings.NewReader(`{"email":"test@example.com", "password":"password"}`))
 		req.Header.Set("Content-Type", "application/json")
 		resp, err := app.Test(req)
 
@@ -67,7 +67,7 @@ func TestVerifyEmailCode(t *testing.T) {
 			Code:  "code",
 		}).Return(customerror.ErrInvalidVerificationCode)
 
-		req, _ := http.NewRequest("POST", "/verification", strings.NewReader(`{"email":"test@example.com", "code":"code"}`))
+		req, _ := http.NewRequest("POST", "/api/v1/auth/verification", strings.NewReader(`{"email":"test@example.com", "code":"code"}`))
 		req.Header.Set("Content-Type", "application/json")
 		resp, err := app.Test(req)
 
@@ -83,7 +83,7 @@ func TestVerifyEmailCode(t *testing.T) {
 			Code:  "code",
 		}).Return(nil)
 
-		req, _ := http.NewRequest("POST", "/verification", strings.NewReader(`{"email":"test@example.com", "code":"code"}`))
+		req, _ := http.NewRequest("POST", "/api/v1/auth/verification", strings.NewReader(`{"email":"test@example.com", "code":"code"}`))
 		req.Header.Set("Content-Type", "application/json")
 		resp, err := app.Test(req)
 

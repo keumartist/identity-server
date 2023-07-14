@@ -32,7 +32,7 @@ func TestUserHandler(t *testing.T) {
 		mockUserService.On("GetUserByID", getUserByIdInput).Return(dto.User{Email: email}, nil)
 		mockTokenService.On("VerifyToken", tokenservice.VerifyTokenInput{Token: testToken, TokenType: tokenservice.AccessToken}).Return(true, userId, "", nil)
 
-		req, _ := http.NewRequest("GET", "/users/me", nil)
+		req, _ := http.NewRequest("GET", "/api/v1/users/me", nil)
 		req.Header.Set("Authorization", "Bearer "+testToken)
 		resp, err := app.Test(req, -1)
 
@@ -46,7 +46,7 @@ func TestUserHandler(t *testing.T) {
 		input := userservice.GetUserByEmailInput{Email: email}
 		mockUserService.On("GetUserByEmail", input).Return(dto.User{Email: email}, nil)
 
-		req, _ := http.NewRequest("GET", "/users?email="+email, nil)
+		req, _ := http.NewRequest("GET", "/api/v1/users?email="+email, nil)
 		resp, err := app.Test(req, -1)
 
 		assert.NoError(t, err)
@@ -65,7 +65,7 @@ func TestUserHandler(t *testing.T) {
 		payload := map[string]interface{}{"name": name}
 		body, _ := json.Marshal(payload)
 
-		req, _ := http.NewRequest("PUT", "/users/me", bytes.NewReader(body))
+		req, _ := http.NewRequest("PUT", "/api/v1/users/me", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer "+testToken)
 
@@ -83,7 +83,7 @@ func TestUserHandler(t *testing.T) {
 		mockUserService.On("DeleteUser", input).Return(nil)
 		mockTokenService.On("VerifyToken", tokenservice.VerifyTokenInput{Token: testToken, TokenType: tokenservice.AccessToken}).Return(true, id, "", nil)
 
-		req, _ := http.NewRequest("DELETE", "/users/me", nil)
+		req, _ := http.NewRequest("DELETE", "/api/v1/users/me", nil)
 		req.Header.Set("Authorization", "Bearer "+testToken)
 		resp, err := app.Test(req, -1)
 
@@ -96,7 +96,7 @@ func TestUserHandler(t *testing.T) {
 
 		mockTokenService.On("VerifyToken", tokenservice.VerifyTokenInput{Token: testToken, TokenType: tokenservice.AccessToken}).Return(false, "", "", nil)
 
-		req, _ := http.NewRequest("GET", "/users/me", nil)
+		req, _ := http.NewRequest("GET", "/api/v1/users/me", nil)
 		req.Header.Set("Authorization", "Bearer "+testToken)
 		resp, err := app.Test(req, -1)
 
@@ -110,7 +110,7 @@ func TestUserHandler(t *testing.T) {
 		input := userservice.GetUserByEmailInput{Email: email}
 		mockUserService.On("GetUserByEmail", input).Return(dto.User{}, customerror.ErrUserNotFound)
 
-		req, _ := http.NewRequest("GET", "/users?email="+email, nil)
+		req, _ := http.NewRequest("GET", "/api/v1/users?email="+email, nil)
 		resp, err := app.Test(req, -1)
 
 		assert.NoError(t, err)
@@ -121,7 +121,7 @@ func TestUserHandler(t *testing.T) {
 		testToken := "test-token"
 
 		invalidBody := ""
-		req, _ := http.NewRequest("PUT", "/users/me", bytes.NewBuffer([]byte(invalidBody)))
+		req, _ := http.NewRequest("PUT", "/api/v1/users/me", bytes.NewBuffer([]byte(invalidBody)))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer "+testToken)
 
